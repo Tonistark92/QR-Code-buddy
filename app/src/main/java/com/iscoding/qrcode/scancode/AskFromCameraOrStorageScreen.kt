@@ -1,4 +1,4 @@
-package com.iscoding.qrcode.generatecode
+package com.iscoding.qrcode.scancode
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,17 +12,17 @@ import androidx.navigation.NavController
 import com.iscoding.qrcode.graph.Screens
 
 @Composable
-fun MainScreen(navController: NavController) {
+fun AskFromCameraOrStorageScreen(navController: NavController) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier.fillMaxSize()
     ) {
-        Button(onClick = {navController.navigate(Screens.AskFromCameraOrStorageScreen)} ) {
-            Text(text = "To Scan QR Code")
+        Button(onClick = {navController.navigate(Screens.ShowAllImagesScreen)} ) {
+            Text(text = "QR From Storage")
         }
-        Button(onClick = {navController.navigate(Screens.GenerateCode)}) {
-            Text(text = "To Generate QR Code")
+        Button(onClick = {navController.navigate(Screens.ScanCode)}) {
+            Text(text = "QR From Camera")
         }
     }
 }

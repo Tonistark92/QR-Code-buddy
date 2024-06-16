@@ -1,14 +1,10 @@
-package com.iscoding.qrcode.scancode
+package com.iscoding.qrcode.scancode.fromcamera
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Bundle
 import android.util.Size
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST

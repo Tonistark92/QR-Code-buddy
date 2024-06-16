@@ -1,4 +1,4 @@
-package com.iscoding.qrcode.scancode
+package com.iscoding.qrcode.scancode.fromcamera
 
 import android.graphics.ImageFormat
 import androidx.camera.core.ImageAnalysis

@@ -1,12 +1,19 @@
 package com.iscoding.qrcode.generatecode
 
+import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.provider.CalendarContract.Colors
+import android.util.Log
 import android.widget.EditText
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -18,18 +25,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.core.content.FileProvider
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 
 @Composable
 fun GenerateQRCode() {
     val textState = remember { mutableStateOf("") }
     val qrBitmapState = remember { mutableStateOf<Bitmap?>(null) }
     val coroutineScope = rememberCoroutineScope()
+    val shareImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
+    val context = LocalContext.current
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -67,8 +80,40 @@ fun GenerateQRCode() {
             },
             label = { Text("Enter text") }
         )
+            Button(onClick = {
+                Log.d("ISLAM", qrBitmapState.value!!.byteCount.toString())
 
+                val uri = getImageUri(context, qrBitmapState.value!!)
+                Log.d("ISLAM", uri.toString())
+                uri?.let { imageUri ->
+                    val shareIntent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_STREAM, imageUri)
+                        type = "image/png"
+                    }
+                    shareImageLauncher.launch(Intent.createChooser(shareIntent, "Share QR Code"))
+                }
+            }) {
+                Text("Share QR Code")
+            }
+        }
+
+
+
+}
+fun getImageUri(context: Context, bitmap: Bitmap): Uri? {
+    val imagesFolder = File(context.cacheDir, "images")
+    var uri: Uri? = null
+    try {
+        imagesFolder.mkdirs()
+        val file = File(imagesFolder, "shared_image.png")
+        val stream = FileOutputStream(file)
+        bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
+        stream.flush()
+        stream.close()
+        uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
-
-
+    return uri
 }
