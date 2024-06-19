@@ -24,12 +24,12 @@ fun ShowQRCodeImageData(qrCodeData:String,imageUri:String) {
         )
 
         // Display the image using the provided URI
-//        Image(
-//            painter = rememberImagePainter(imageUri),
-//            contentDescription = null,
-//            contentScale = ContentScale.Fit,
-//            modifier = Modifier.size(300.dp)
-//        )
+        Image(
+            painter = rememberImagePainter(imageUri),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.size(300.dp)
+        )
 
     }
 }

@@ -143,7 +143,7 @@ private fun analyzeImage(
                     Log.d("ShowAllImagesScreen", "Scanned QR Code: $qrCodeData")
                     // Example: Show a Toast
                     Toast.makeText(context, "QR Code Data: $qrCodeData", Toast.LENGTH_LONG).show()
-                    navController.navigate( "${Screens.ShowQRCodeDataScreen}/${qrCodeData.toString()}${uri.toString()}")
+                    navController.navigate( "showQRCodeDetails/${qrCodeData.toString()}/${Uri.encode(uri.toString())}")
                 }.analyze(uri, it)
             }
         } else {

@@ -7,6 +7,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.iscoding.qrcode.generatecode.GenerateQRCode
 import com.iscoding.qrcode.generatecode.MainScreen
 import com.iscoding.qrcode.scancode.AskFromCameraOrStorageScreen
@@ -42,17 +43,16 @@ fun RootNavigationGraph(navController: NavHostController) {
         }
 
         composable(
-            route = "${Screens.ShowQRCodeDataScreen}/{qrCodeData}/{imageUri}",
+            //      showqrcodedatascreen
+            route = "showQRCodeDetails/{qrCodeData}/{imageUri}",
             arguments = listOf(
                 navArgument("qrCodeData") { type = NavType.StringType },
                 navArgument("imageUri") { type = NavType.StringType }
-            )
+            ),
+            deepLinks = listOf(navDeepLink { uriPattern = "qrcode://showqrcodedatascreen/{qrCodeData}/{imageUri}" })
         ) { backStackEntry ->
-//            val qrCodeData = backStackEntry.arguments?.getString("qrCodeData") ?: ""
-//            val imageUri = backStackEntry.arguments?.getString("imageUri") ?: ""
-            val qrCodeData = requireNotNull(backStackEntry.arguments).getString("qrCodeData")
-            val imageUri = requireNotNull(backStackEntry.arguments).getString("imageUri")
-            // Pass qrCodeData and imageUri to your ShowQRCodeImageData composable
+            val qrCodeData = backStackEntry.arguments?.getString("qrCodeData")
+            val imageUri = backStackEntry.arguments?.getString("imageUri")
             ShowQRCodeImageData(qrCodeData = qrCodeData!!, imageUri = imageUri!!)
         }
     }
