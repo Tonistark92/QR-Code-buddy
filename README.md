@@ -8,6 +8,7 @@ This Android application allows users to generate and scan QR codes. The app is 
 - Scan QR codes using the device's camera
 - Modern UI built with Jetpack Compose
 - Navigation between screens using Jetpack Navigation
+- Deep link handling for shared qr coe image from other app
 
 ## Libraries Used
 
