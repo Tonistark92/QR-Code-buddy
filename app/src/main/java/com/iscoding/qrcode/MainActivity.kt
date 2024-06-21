@@ -2,6 +2,7 @@ package com.iscoding.qrcode
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -37,13 +38,18 @@ class MainActivity : ComponentActivity() {
 
     }
     private fun handleSharedImage(intent: Intent, navController: NavHostController) {
-        val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+        val imageUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+        }
         if (imageUri != null) {
             val inputStream = contentResolver.openInputStream(imageUri)
             inputStream?.use {
                 val analyzer = StorageImageAnalyzer { qrCodeData ->
                     // Navigate using deep link
-                    val deepLinkUri = Uri.parse("qrcode://showqrcodedatascreen/$qrCodeData/${
+                    val deepLinkUri = Uri.parse("qrcodebuddy://${Screens.ShowQRCodeDataScreenDeepLink}/$qrCodeData/${
                         Uri.encode(
                             imageUri.toString()
                         )

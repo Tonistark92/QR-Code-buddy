@@ -29,12 +29,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.core.content.FileProvider
 import com.google.zxing.BarcodeFormat
+import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import java.util.Hashtable
 
 @Composable
 fun GenerateQRCode() {
@@ -65,7 +67,9 @@ fun GenerateQRCode() {
                 coroutineScope.launch(Dispatchers.Default) {
                     delay(2000) // Wait for 2 seconds
                     val writer = QRCodeWriter()
-                    val bitMatrix = writer.encode(newText,BarcodeFormat.QR_CODE,512,512)
+                    val hints = Hashtable<EncodeHintType, Any>()
+                    hints[EncodeHintType.CHARACTER_SET] = "UTF-8"
+                    val bitMatrix = writer.encode(newText,BarcodeFormat.QR_CODE,512,512,hints)
                     val width = bitMatrix.width
                     val hight = bitMatrix.height
                     val bmp = Bitmap.createBitmap(width,hight,Bitmap.Config.RGB_565)
@@ -80,22 +84,26 @@ fun GenerateQRCode() {
             },
             label = { Text("Enter text") }
         )
-            Button(onClick = {
-                Log.d("ISLAM", qrBitmapState.value!!.byteCount.toString())
-
-                val uri = getImageUri(context, qrBitmapState.value!!)
-                Log.d("ISLAM", uri.toString())
-                uri?.let { imageUri ->
-                    val shareIntent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_STREAM, imageUri)
-                        type = "image/png"
+        Button(
+            onClick = {
+                qrBitmapState.value?.let {
+                    Log.d("QRCode", it.byteCount.toString())
+                    val uri = getImageUri(context, it)
+                    Log.d("QRCode", uri.toString())
+                    uri?.let { imageUri ->
+                        val shareIntent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_STREAM, imageUri)
+                            type = "image/png"
+                        }
+                        shareImageLauncher.launch(Intent.createChooser(shareIntent, "Share QR Code"))
                     }
-                    shareImageLauncher.launch(Intent.createChooser(shareIntent, "Share QR Code"))
                 }
-            }) {
-                Text("Share QR Code")
-            }
+            },
+            enabled = qrBitmapState.value != null // Disable the button if qrBitmapState is null
+        ) {
+            Text("Share QR Code")
+        }
         }
 
 

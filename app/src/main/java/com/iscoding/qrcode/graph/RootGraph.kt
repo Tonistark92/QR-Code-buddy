@@ -44,12 +44,12 @@ fun RootNavigationGraph(navController: NavHostController) {
 
         composable(
             //      showqrcodedatascreen
-            route = "showQRCodeDetails/{qrCodeData}/{imageUri}",
+            route = "${Screens.ShowQRCodeDataScreen}/{qrCodeData}/{imageUri}",
             arguments = listOf(
                 navArgument("qrCodeData") { type = NavType.StringType },
                 navArgument("imageUri") { type = NavType.StringType }
             ),
-            deepLinks = listOf(navDeepLink { uriPattern = "qrcode://showqrcodedatascreen/{qrCodeData}/{imageUri}" })
+            deepLinks = listOf(navDeepLink { uriPattern = "qrcodebuddy://showqrcodedatascreen/{qrCodeData}/{imageUri}" })
         ) { backStackEntry ->
             val qrCodeData = backStackEntry.arguments?.getString("qrCodeData")
             val imageUri = backStackEntry.arguments?.getString("imageUri")
