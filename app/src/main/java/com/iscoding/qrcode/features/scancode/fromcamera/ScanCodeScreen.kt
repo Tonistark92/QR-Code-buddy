@@ -1,4 +1,4 @@
-package com.iscoding.qrcode.scancode.fromcamera
+package com.iscoding.qrcode.features.scancode.fromcamera
 
 import android.Manifest
 import android.content.pm.PackageManager

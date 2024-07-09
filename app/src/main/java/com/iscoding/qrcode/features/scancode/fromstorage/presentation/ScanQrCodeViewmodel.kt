@@ -1,4 +1,4 @@
-package com.iscoding.qrcode.scancode.fromstorage.presentation
+package com.iscoding.qrcode.features.scancode.fromstorage.presentation
 
 import android.content.ContentUris
 import android.content.Context
@@ -6,7 +6,7 @@ import android.provider.MediaStore
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.iscoding.qrcode.scancode.fromstorage.domain.SharedStoragePhoto
+import com.iscoding.qrcode.features.scancode.fromstorage.domain.SharedStoragePhoto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

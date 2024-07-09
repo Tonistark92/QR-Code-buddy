@@ -1,4 +1,4 @@
-package com.iscoding.qrcode.scancode.fromstorage.presentation
+package com.iscoding.qrcode.features.scancode.fromstorage.presentation
 
 import android.annotation.SuppressLint
 import android.content.ContentResolver
@@ -32,8 +32,8 @@ import coil.compose.rememberImagePainter
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.iscoding.qrcode.graph.Screens
-import com.iscoding.qrcode.scancode.fromstorage.domain.SharedStoragePhoto
-import com.iscoding.qrcode.scancode.fromstorage.domain.StorageImageAnalyzer
+import com.iscoding.qrcode.features.scancode.fromstorage.domain.SharedStoragePhoto
+import com.iscoding.qrcode.features.scancode.fromstorage.domain.StorageImageAnalyzer
 import java.io.IOException
 import java.io.InputStream
 
@@ -115,7 +115,6 @@ private fun analyzeImage(
     uri: Uri,
     navController: NavController
 ) {
-
     try {
         // Open an input stream from the URI
         val inputStream: InputStream? = contentResolver.openInputStream(uri)
@@ -130,20 +129,18 @@ private fun analyzeImage(
             // Perform your image analysis or processing here
             Log.d("analyzeImage", "Bitmap loaded successfully from URI: $uri")
 
-            // Example usage: pass the URI and bitmap to your analyzer
-            val analyzer = StorageImageAnalyzer { qrCode ->
-                Log.d("analyzeImage", "Scanned QR code: $qrCode")
-                // Navigate to another screen or handle QR code data as needed
-                navController.navigate(Screens.ShowQRCodeDataScreen)
-            }
             val inputStream = context.contentResolver.openInputStream(uri)
             inputStream?.use {
-                StorageImageAnalyzer { qrCodeData ->
+                StorageImageAnalyzer (
+                    onNoQRCodeFound = {
+                    Toast.makeText(context, "This is not QR Code Image ", Toast.LENGTH_LONG).show()
+
+                } ){ qrCodeData ->
                     // Handle QR code data here, e.g., show a dialog, navigate to a new screen
                     Log.d("ShowAllImagesScreen", "Scanned QR Code: $qrCodeData")
                     // Example: Show a Toast
                     Toast.makeText(context, "QR Code Data: $qrCodeData", Toast.LENGTH_LONG).show()
-                    navController.navigate( "showQRCodeDetails/${qrCodeData.toString()}/${Uri.encode(uri.toString())}")
+                    navController.navigate( "${Screens.ShowQRCodeDataScreen}/${qrCodeData.toString()}/${Uri.encode(uri.toString())}")
                 }.analyze(uri, it)
             }
         } else {

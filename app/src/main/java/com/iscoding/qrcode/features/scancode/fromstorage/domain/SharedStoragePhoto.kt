@@ -1,4 +1,4 @@
-package com.iscoding.qrcode.scancode.fromstorage.domain
+package com.iscoding.qrcode.features.scancode.fromstorage.domain
 
 import android.graphics.Bitmap
 import android.net.Uri

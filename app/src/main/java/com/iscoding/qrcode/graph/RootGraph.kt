@@ -8,12 +8,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.iscoding.qrcode.generatecode.GenerateQRCode
-import com.iscoding.qrcode.generatecode.MainScreen
-import com.iscoding.qrcode.scancode.AskFromCameraOrStorageScreen
-import com.iscoding.qrcode.scancode.fromcamera.ScanCodeScreen
-import com.iscoding.qrcode.scancode.fromstorage.presentation.ShowAllImagesScreen
-import com.iscoding.qrcode.scancode.fromstorage.presentation.ShowQRCodeImageData
+import com.iscoding.qrcode.features.generatecode.GenerateQRCode
+import com.iscoding.qrcode.features.generatecode.MainScreen
+import com.iscoding.qrcode.features.scancode.AskFromCameraOrStorageScreen
+import com.iscoding.qrcode.features.scancode.fromcamera.ScanCodeScreen
+import com.iscoding.qrcode.features.scancode.fromstorage.presentation.ShowAllImagesScreen
+import com.iscoding.qrcode.features.scancode.fromstorage.presentation.ShowQRCodeImageData
 
 @Composable
 fun RootNavigationGraph(navController: NavHostController) {
@@ -43,13 +43,13 @@ fun RootNavigationGraph(navController: NavHostController) {
         }
 
         composable(
-            //      showqrcodedatascreen
+            //      /ShowQrCodeDataScreen
             route = "${Screens.ShowQRCodeDataScreen}/{qrCodeData}/{imageUri}",
             arguments = listOf(
                 navArgument("qrCodeData") { type = NavType.StringType },
                 navArgument("imageUri") { type = NavType.StringType }
             ),
-            deepLinks = listOf(navDeepLink { uriPattern = "qrcodebuddy://showqrcodedatascreen/{qrCodeData}/{imageUri}" })
+            deepLinks = listOf(navDeepLink { uriPattern = "qrcodebuddy://${Screens.ShowQRCodeDataScreenDeepLink}/{qrCodeData}/{imageUri}" })
         ) { backStackEntry ->
             val qrCodeData = backStackEntry.arguments?.getString("qrCodeData")
             val imageUri = backStackEntry.arguments?.getString("imageUri")

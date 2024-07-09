@@ -1,4 +1,4 @@
-package com.iscoding.qrcode.scancode.fromstorage.domain
+package com.iscoding.qrcode.features.scancode.fromstorage.domain
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -6,14 +6,16 @@ import android.util.Log
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.DecodeHintType
 import com.google.zxing.MultiFormatReader
+import com.google.zxing.NotFoundException
 import com.google.zxing.RGBLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 import java.io.InputStream
 
 class StorageImageAnalyzer(
-    private val onQrCodeScanned: (String) -> Unit
-) {
+    private val onNoQRCodeFound: () -> Unit,
 
+    private val onQrCodeScanned: (String) -> Unit,
+) {
     fun analyze(uri: Uri, inputStream: InputStream) {
         try {
             // Load bitmap from URI using BitmapFactory
@@ -23,13 +25,19 @@ class StorageImageAnalyzer(
                 // Convert Bitmap to BinaryBitmap for ZXing library
                 val binaryBitmap = createBinaryBitmap(bitmap)
 
-                // Use ZXing MultiFormatReader to decode QR code
-                val result = MultiFormatReader().decode(binaryBitmap)
+                try {
+                    // Use ZXing MultiFormatReader to decode QR code
+                    val result = MultiFormatReader().decode(binaryBitmap)
 
-                // Handle QR code result
-                val qrCodeText = result.text
-                Log.d("StorageImageAnalyzer", "Scanned QR Code: $qrCodeText")
-                onQrCodeScanned(qrCodeText)
+                    // Handle QR code result
+                    val qrCodeText = result.text
+                    Log.d("StorageImageAnalyzer", "Scanned QR Code: $qrCodeText")
+                    onQrCodeScanned(qrCodeText)
+                } catch (e: NotFoundException) {
+                    // Handle case where no QR code is found
+                    Log.d("StorageImageAnalyzer", "No QR Code found in image: $uri")
+                    onNoQRCodeFound()
+                }
             } else {
                 Log.e("StorageImageAnalyzer", "Failed to load Bitmap from URI: $uri")
             }

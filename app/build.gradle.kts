@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    kotlin("kapt")
 }
 
 android {
@@ -87,4 +88,22 @@ dependencies {
 
     implementation("com.google.accompanist:accompanist-permissions:0.31.1-alpha")
     implementation("io.coil-kt:coil-compose:1.4.0")
+
+    // Room
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-compiler:2.6.1")
+    annotationProcessor("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    kapt( "androidx.room:room-compiler:2.6.1")
+
+    // koin
+    implementation ("io.insert-koin:koin-android:3.5.3")
+    implementation ("io.insert-koin:koin-androidx-navigation:3.2.0-beta-1")
+    implementation ("io.insert-koin:koin-androidx-compose:3.5.3")
+
+    //life cycle
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.8.2")
+}
+kapt {
+    correctErrorTypes = true
 }

@@ -1,4 +1,4 @@
-package com.iscoding.qrcode.scancode.fromstorage.presentation
+package com.iscoding.qrcode.features.scancode.fromstorage.presentation
 
 import android.net.Uri
 import androidx.compose.foundation.Image

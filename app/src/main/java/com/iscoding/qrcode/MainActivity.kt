@@ -1,32 +1,46 @@
 package com.iscoding.qrcode
 
+import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.ActivityCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.iscoding.qrcode.graph.RootNavigationGraph
 import com.iscoding.qrcode.graph.Screens
-import com.iscoding.qrcode.scancode.fromstorage.domain.StorageImageAnalyzer
+import com.iscoding.qrcode.features.scancode.fromstorage.domain.StorageImageAnalyzer
 import com.iscoding.qrcode.ui.theme.QRCodeTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val context = this
+            val permisions = arrayOf(
+
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_NETWORK_STATE,
+                Manifest.permission.INTERNET,
+                Manifest.permission.CHANGE_NETWORK_STATE,
+                Manifest.permission.ACCESS_WIFI_STATE,
+                Manifest.permission.CHANGE_WIFI_STATE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA
+            )
+
+            LaunchedEffect(key1 = true) {
+                ActivityCompat.requestPermissions(context , permisions, 11)
+
+            }
             val navController = rememberNavController()
             QRCodeTheme {
                 RootNavigationGraph(navController = navController)
@@ -47,7 +61,11 @@ class MainActivity : ComponentActivity() {
         if (imageUri != null) {
             val inputStream = contentResolver.openInputStream(imageUri)
             inputStream?.use {
-                val analyzer = StorageImageAnalyzer { qrCodeData ->
+                val analyzer = StorageImageAnalyzer(
+                    onNoQRCodeFound = {
+                    Toast.makeText(this, "This is not QR Code Image ", Toast.LENGTH_LONG).show()
+
+                }) { qrCodeData ->
                     // Navigate using deep link
                     val deepLinkUri = Uri.parse("qrcodebuddy://${Screens.ShowQRCodeDataScreenDeepLink}/$qrCodeData/${
                         Uri.encode(
