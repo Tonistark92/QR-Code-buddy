@@ -26,6 +26,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -44,6 +45,8 @@ import com.google.zxing.qrcode.QRCodeWriter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.compose.koinViewModel
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Hashtable
@@ -53,82 +56,18 @@ import java.util.Hashtable
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenerateQRCode() {
-    val pickedTypeState = remember { mutableStateOf("") }
-
-    val wifiSSIDState = remember { mutableStateOf("") }
-    val errorMessageWifiSSIDState = remember { mutableStateOf("Enter the Network Name ") }
-    val shouldShowErrorWIFISSIDState = remember { mutableStateOf(false) }
-    val encryptionWifiTypesList = listOf("WEP", "WPA", "WPA2", "nopass")
-    var choosenEncryptionState = remember {
-        mutableStateOf("")
-    }
-    var choosenWifiEncryptionType = remember {
-        mutableStateOf("nopass")
-    }
-    val wifiPasswordState = remember { mutableStateOf("") }
-    val shouldShowErrorWifiPasswordState = remember { mutableStateOf(false) }
-    val errorMessageWifiPasswordState = remember { mutableStateOf("Enter a valid Wifi Password (More than 8 digits)") }
-    val isWifiHiddenState = remember { mutableStateOf(false) }
 
 
-    val smsNumberState = remember { mutableStateOf("") }
-    val smsDataState = remember { mutableStateOf("") }
-    val errorMessageSmsNumberState = remember { mutableStateOf("Enter a valid SMS Number") }
-    val errorMessageSmsDataState =
-        remember { mutableStateOf("Enter a valid SMS Data (more 4 digits) ") }
-    val shouldShowErrorSmsNumberState = remember { mutableStateOf(false) }
-    val shouldShowErrorSmsDataState = remember { mutableStateOf(false) }
-
-    val telState = remember { mutableStateOf("") }
-    val errorMessageTelState = remember { mutableStateOf("Enter a valid Tel Number") }
-    val shouldShowErrorTelState = remember { mutableStateOf(false) }
-
-    val mailState = remember { mutableStateOf("") }
-    val errorMessageMailState = remember { mutableStateOf("Enter a valid Mail") }
-    val shouldShowErrorMailState = remember { mutableStateOf(false) }
-
-    val plainTextState = remember { mutableStateOf("") }
-    val errorMessagePlainTextState = remember { mutableStateOf("Enter text more than 4 char") }
-    val shouldShowErrorPlainTextState = remember { mutableStateOf(false) }
-
-    val urlState = remember { mutableStateOf("") }
-    val errorMessageUrlState = remember { mutableStateOf("Enter a valid URL") }
-    val shouldShowErrorUrlState = remember { mutableStateOf(false) }
-
-    val geoLatitudeState = remember { mutableStateOf("") }
-    val errorMessageGeoLatitudState = remember { mutableStateOf("") }
-    val shouldShowErrorGeoLatitudState = remember { mutableStateOf(false) }
-
-    val geoLongitudeState = remember { mutableStateOf("") }
-    val errorMessageGeoLongState = remember { mutableStateOf("") }
-    val shouldShowErrorGeoLongState = remember { mutableStateOf(false) }
-
-    val eventSubjectState = remember { mutableStateOf("") }
-    val errorMessageSubjectState =
-        remember { mutableStateOf("The Subject should be more that 4 letters") }
-    val shouldShowErrorSubjectState = remember { mutableStateOf(false) }
-
-    val eventDTStartState = remember { mutableStateOf("") }
-    val errorMessageEventDTStartState =
-        remember { mutableStateOf("add the time data in this format ex time in 24  : 20240622T190000") }
-    val shouldShowErrorEventDTStartState = remember { mutableStateOf(false) }
-
-    val eventDTEndState = remember { mutableStateOf("") }
-    val errorMessageEventDTEndState =
-        remember { mutableStateOf("add the time data in this format ex time in 24  : 20240622T190000") }
-    val shouldShowErrorEventDTEndState = remember { mutableStateOf(false) }
-
-
-    val eventLocationState = remember { mutableStateOf("") }
-    val errorMessageEventLocationState =
-        remember { mutableStateOf("The Location should be more that 4 letters") }
-    val shouldShowErrorEventLocationState = remember { mutableStateOf(false) }
     ///////////////////////// wifi
     val wifiManager =
         LocalContext.current.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
 
 
-    val qrBitmapState = remember { mutableStateOf<Bitmap?>(null) }
+//    val viewmodel = getViewModel<GenerateQRCodeViewModel>()
+    val viewmodel = koinViewModel<GenerateQRCodeViewModel>()
+    val state = viewmodel.state.collectAsState()
+
+
     val coroutineScope = rememberCoroutineScope()
     val shareImageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
@@ -144,7 +83,7 @@ fun GenerateQRCode() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        qrBitmapState.value?.let { bitmap ->
+        state.value.qrBitmap?.let { bitmap ->
             Image(
                 bitmap = bitmap.asImageBitmap(),
                 contentDescription = "QR Code"
@@ -165,8 +104,8 @@ fun GenerateQRCode() {
         ) {
 
             TextField(
-                value = pickedTypeState.value,
-                onValueChange = { pickedTypeState.value = it },
+                value = state.value.pickedType,
+                onValueChange = { state.value.pickedType = it },
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDatatype.value) },
                 modifier = Modifier.menuAnchor()
@@ -183,7 +122,7 @@ fun GenerateQRCode() {
                         text = { Text(item) },
                         onClick = {
                             choosenData.value = item
-                            pickedTypeState.value = item
+                            state.value.pickedType = item
                             expandedDatatype.value = false
                         }
                     )
@@ -191,175 +130,175 @@ fun GenerateQRCode() {
             }
         }
         Spacer(modifier = Modifier.height(6.dp))
-
-        if (choosenData.value == "WIFI") {
-            TextField(
-                value = wifiSSIDState.value,
-                onValueChange = { newText ->
-                    wifiSSIDState.value = newText
-
-                    coroutineScope.launch(Dispatchers.Default) {
-                        delay(3000)
-                        shouldShowErrorWIFISSIDState.value = newText.isEmpty()
-                    }
-
-                },
-                label = { Text("Type The number") },
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            if (shouldShowErrorWIFISSIDState.value) {
-                Text(text = errorMessageWifiSSIDState.value)
-                Spacer(modifier = Modifier.height(6.dp))
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            var expandedEncryptionType = remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(
-                expanded = expandedEncryptionType.value,
-                onExpandedChange = {
-                    expandedEncryptionType.value = !expandedEncryptionType.value
-                }
-            ) {
-
-                TextField(
-                    value = choosenEncryptionState.value,
-                    onValueChange = { choosenEncryptionState.value = it },
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEncryptionType.value) },
-                    modifier = Modifier.menuAnchor()
-                )
-
-                ExposedDropdownMenu(
-                    expanded = expandedEncryptionType.value,
-                    onDismissRequest = {
-                        expandedEncryptionType.value = false
-                    }
-                ) {
-                    encryptionWifiTypesList.forEach { item ->
-                        DropdownMenuItem(
-                            text = { Text(item) },
-                            onClick = {
-                                choosenWifiEncryptionType.value = item
-                                choosenEncryptionState.value = item
-                                expandedEncryptionType.value = false
-                            }
-                        )
-                    }
-                }
-            }
-            if (choosenWifiEncryptionType.value != "nopass") {
-                Spacer(modifier = Modifier.height(6.dp))
-                TextField(
-                    value = wifiPasswordState.value,
-                    onValueChange = { newText ->
-                        wifiPasswordState.value = newText
-
-                        coroutineScope.launch(Dispatchers.Default) {
-                            delay(3000)
-                            shouldShowErrorWifiPasswordState.value = newText.isEmpty()
-                        }
-
-                    },
-                    label = { Text("Type The number") },
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                if (shouldShowErrorWifiPasswordState.value) {
-                    Text(text = errorMessageWifiPasswordState.value)
-                    Spacer(modifier = Modifier.height(6.dp))
-                }
-            }
-            Row(horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = isWifiHiddenState.value, onCheckedChange ={isWifiHiddenState.value = !isWifiHiddenState.value} )
-            }
-
-        }
+//
+//        if (choosenData.value == "WIFI") {
+//            TextField(
+//                value = state.value.wifiSSID,
+//                onValueChange = { newText ->
+//                    state.value.wifiSSID = newText
+//
+//                    coroutineScope.launch(Dispatchers.Default) {
+//                        delay(3000)
+//                        state.value.shouldShowErrorWifiSSID = newText.isEmpty()
+//                    }
+//
+//                },
+//                label = { Text("Type The number") },
+//            )
+//            Spacer(modifier = Modifier.height(6.dp))
+//            if (state.value.shouldShowErrorWifiSSID) {
+//                Text(text = state.value.shouldShowErrorWifiSSID.value)
+//                Spacer(modifier = Modifier.height(6.dp))
+//            }
+//
+//            Spacer(modifier = Modifier.height(10.dp))
+//
+//            var expandedEncryptionType = remember { mutableStateOf(false) }
+//            ExposedDropdownMenuBox(
+//                expanded = expandedEncryptionType.value,
+//                onExpandedChange = {
+//                    expandedEncryptionType.value = !expandedEncryptionType.value
+//                }
+//            ) {
+//
+//                TextField(
+//                    value = state.value.choosenEncryption,
+//                    onValueChange = { state.value.choosenEncryption = it },
+//                    readOnly = true,
+//                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEncryptionType.value) },
+//                    modifier = Modifier.menuAnchor()
+//                )
+//
+//                ExposedDropdownMenu(
+//                    expanded = expandedEncryptionType.value,
+//                    onDismissRequest = {
+//                        expandedEncryptionType.value = false
+//                    }
+//                ) {
+//                    state.value.encryptionWifiTypesList.forEach { item ->
+//                        DropdownMenuItem(
+//                            text = { Text(item) },
+//                            onClick = {
+//                                choosenWifiEncryptionType.value = item
+//                                choosenEncryptionState.value = item
+//                                expandedEncryptionType.value = false
+//                            }
+//                        )
+//                    }
+//                }
+//            }
+//            if (choosenWifiEncryptionType.value != "nopass") {
+//                Spacer(modifier = Modifier.height(6.dp))
+//                TextField(
+//                    value = wifiPasswordState.value,
+//                    onValueChange = { newText ->
+//                        wifiPasswordState.value = newText
+//
+//                        coroutineScope.launch(Dispatchers.Default) {
+//                            delay(3000)
+//                            shouldShowErrorWifiPasswordState.value = newText.isEmpty()
+//                        }
+//
+//                    },
+//                    label = { Text("Type The number") },
+//                )
+//                Spacer(modifier = Modifier.height(6.dp))
+//                if (shouldShowErrorWifiPasswordState.value) {
+//                    Text(text = errorMessageWifiPasswordState.value)
+//                    Spacer(modifier = Modifier.height(6.dp))
+//                }
+//            }
+//            Row(horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+//                Checkbox(checked = isWifiHiddenState.value, onCheckedChange ={isWifiHiddenState.value = !isWifiHiddenState.value} )
+//            }
+//
+//        }
 
         if (choosenData.value == "Tel") {
             TextField(
-                value = telState.value,
+                value = state.value.tel,
                 onValueChange = { newText ->
-                    telState.value = newText
+                    state.value.tel = newText
 
                     coroutineScope.launch(Dispatchers.Default) {
                         delay(3000)
                         val phoneNumberPattern =
                             Regex("""\+?[0-9]{1,4}?[-.\s]?(\(?\d{1,3}?\)?[-.\s]?){1,4}\d{1,4}""")
-                        shouldShowErrorTelState.value = newText.matches(phoneNumberPattern)
+                        state.value.shouldShowErrorTel = newText.matches(phoneNumberPattern)
                     }
 
                 },
                 label = { Text("Type The number") },
             )
             Spacer(modifier = Modifier.height(6.dp))
-            if (shouldShowErrorTelState.value) {
-                Text(text = errorMessageTelState.value)
+            if (state.value.shouldShowErrorTel) {
+                Text(text = state.value.errorMessageTel)
                 Spacer(modifier = Modifier.height(6.dp))
             }
 
         }
         if (choosenData.value == "SMS") {
             TextField(
-                value = smsNumberState.value,
+                value = state.value.smsNumber,
                 onValueChange = { newText ->
-                    smsNumberState.value = newText
+                    state.value.smsNumber = newText
 
                     coroutineScope.launch(Dispatchers.Default) {
                         delay(3000)
                         val phoneNumberPattern =
                             Regex("""\+?[0-9]{1,4}?[-.\s]?(\(?\d{1,3}?\)?[-.\s]?){1,4}\d{1,4}""")
-                        shouldShowErrorSmsNumberState.value = newText.matches(phoneNumberPattern)
+                        state.value.shouldShowErrorSmsNumber = newText.matches(phoneNumberPattern)
                     }
 
                 },
                 label = { Text("Type The number") },
             )
             Spacer(modifier = Modifier.height(6.dp))
-            if (shouldShowErrorSmsNumberState.value) {
-                Text(text = errorMessageSmsNumberState.value)
+            if (state.value.shouldShowErrorSmsNumber) {
+                Text(text = state.value.errorMessageSmsNumber)
                 Spacer(modifier = Modifier.height(6.dp))
             }
             Spacer(modifier = Modifier.height(8.dp))
 
             TextField(
-                value = smsDataState.value,
+                value = state.value.smsData,
                 onValueChange = { newText ->
-                    smsDataState.value = newText
+                    state.value.smsData = newText
 
                     coroutineScope.launch(Dispatchers.Default) {
                         delay(3000)
-                        shouldShowErrorSmsDataState.value = newText.length < 4
+                        state.value.shouldShowErrorSmsData = newText.length < 4
                     }
 
                 },
                 label = { Text("Type The number") },
             )
             Spacer(modifier = Modifier.height(6.dp))
-            if (shouldShowErrorSmsDataState.value) {
-                Text(text = errorMessageSmsDataState.value)
+            if (state.value.shouldShowErrorSmsData) {
+                Text(text = state.value.errorMessageSmsData)
                 Spacer(modifier = Modifier.height(6.dp))
             }
         }
 
         if (choosenData.value == "Mail") {
             TextField(
-                value = mailState.value,
+                value = state.value.mail,
                 onValueChange = { newText ->
-                    mailState.value = newText
+                    state.value.mail= newText
 
                     coroutineScope.launch(Dispatchers.Default) {
                         delay(3000)
                         val emailPattern =
                             Regex("""[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}""")
-                        shouldShowErrorMailState.value = newText.matches(emailPattern)
+                        state.value.shouldShowErrorMail = newText.matches(emailPattern)
                     }
 
                 },
                 label = { Text("Type The Mail") },
             )
             Spacer(modifier = Modifier.height(6.dp))
-            if (shouldShowErrorMailState.value) {
-                Text(text = errorMessageMailState.value)
+            if (state.value.shouldShowErrorMail) {
+                Text(text = state.value.errorMessageMail)
                 Spacer(modifier = Modifier.height(6.dp))
             }
 
@@ -367,23 +306,23 @@ fun GenerateQRCode() {
         }
         if (choosenData.value == "URL") {
             TextField(
-                value = urlState.value,
+                value = state.value.url,
                 onValueChange = { newText ->
-                    urlState.value = newText
+                    state.value.url = newText
 
                     coroutineScope.launch(Dispatchers.Default) {
                         delay(3000)
                         val urlPattern =
                             Regex("""https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)""")
-                        shouldShowErrorUrlState.value = newText.matches(urlPattern)
+                        state.value.shouldShowErrorUrl = newText.matches(urlPattern)
                     }
 
                 },
                 label = { Text("Type The URL") },
             )
             Spacer(modifier = Modifier.height(6.dp))
-            if (shouldShowErrorUrlState.value) {
-                Text(text = errorMessageUrlState.value)
+            if (state.value.shouldShowErrorUrl) {
+                Text(text = state.value.errorMessageUrl)
                 Spacer(modifier = Modifier.height(6.dp))
             }
 
@@ -392,21 +331,21 @@ fun GenerateQRCode() {
 
         if (choosenData.value == "Text") {
             TextField(
-                value = plainTextState.value,
+                value = state.value.plainText,
                 onValueChange = { newText ->
-                    plainTextState.value = newText
+                    state.value.plainText = newText
 
                     coroutineScope.launch(Dispatchers.Default) {
                         delay(3000)
-                        shouldShowErrorPlainTextState.value = newText.length < 4
+                        state.value.shouldShowErrorPlainText = newText.length < 4
                     }
 
                 },
                 label = { Text("Type The Text") },
             )
             Spacer(modifier = Modifier.height(6.dp))
-            if (shouldShowErrorGeoLatitudState.value) {
-                Text(text = errorMessagePlainTextState.value)
+            if (state.value.shouldShowErrorGeoLatitude) {
+                Text(text = state.value.errorMessagePlainText)
                 Spacer(modifier = Modifier.height(6.dp))
             }
 
@@ -415,14 +354,14 @@ fun GenerateQRCode() {
 
         if (choosenData.value == "Geo") {
             TextField(
-                value = geoLatitudeState.value,
+                value = state.value.geoLatitude,
                 onValueChange = { newText ->
                     coroutineScope.launch(Dispatchers.Default) {
                         delay(3000)
                         val regexPattern = Regex("^-?([1-8]?[1-9]|[1-9]0)\\.{0,1}\\d{0,6}$")
-                        geoLatitudeState.value = newText
+                        state.value.geoLatitude = newText
 
-                        shouldShowErrorGeoLatitudState.value =
+                        state.value.shouldShowErrorGeoLatitude =
                             newText.matches(regexPattern)
                     }
 
@@ -430,21 +369,21 @@ fun GenerateQRCode() {
                 label = { Text("Type The Latitude") },
             )
             Spacer(modifier = Modifier.height(6.dp))
-            if (shouldShowErrorGeoLatitudState.value) {
-                Text(text = errorMessageGeoLatitudState.value)
+            if (state.value.shouldShowErrorGeoLatitude) {
+                Text(text = state.value.errorMessageGeoLatitude)
                 Spacer(modifier = Modifier.height(6.dp))
             }
 
             TextField(
-                value = geoLongitudeState.value,
+                value = state.value.geoLongitude,
                 onValueChange = { newText ->
-                    geoLongitudeState.value = newText
+                    state.value.geoLongitude = newText
                     val regexPattern = Regex("^-?((1?[0-7]?|[0-9]?)[0-9]|180)\\.{0,1}\\d{0,6}$")
                     coroutineScope.launch(Dispatchers.Default) {
                         delay(3000)
-                        geoLongitudeState.value = newText
+                        state.value.geoLongitude = newText
 
-                        shouldShowErrorGeoLongState.value =
+                        state.value.shouldShowErrorGeoLongitude =
                             newText.matches(regexPattern)
                     }
 
@@ -453,21 +392,21 @@ fun GenerateQRCode() {
                 label = { Text("Type The Longitude") },
             )
             Spacer(modifier = Modifier.height(6.dp))
-            if (shouldShowErrorGeoLongState.value) {
-                Text(text = errorMessageGeoLongState.value)
+            if (state.value.shouldShowErrorGeoLongitude) {
+                Text(text = state.value.errorMessageGeoLongitude)
                 Spacer(modifier = Modifier.height(6.dp))
             }
         }
         if (choosenData.value == "Event") {
             //added edit texts for all its data
             TextField(
-                value = eventSubjectState.value,
+                value = state.value.eventSubject,
                 onValueChange = { newText ->
-                    eventSubjectState.value = newText
+                    state.value.eventSubject = newText
 
                     coroutineScope.launch(Dispatchers.IO) {
                         delay(3000)
-                        shouldShowErrorSubjectState.value =
+                        state.value.shouldShowErrorEventSubject =
                             newText.isNotEmpty() && newText.length < 4
                     }
 
@@ -475,22 +414,22 @@ fun GenerateQRCode() {
                 },
                 label = { Text("Type The Subject For The Event") },
                 placeholder = { Text(text = "ex : Meeting") },
-                isError = shouldShowErrorSubjectState.value
+                isError = state.value.shouldShowErrorEventSubject
             )
             Spacer(modifier = Modifier.height(6.dp))
-            if (shouldShowErrorSubjectState.value) {
-                Text(text = errorMessageSubjectState.value)
+            if (state.value.shouldShowErrorEventSubject) {
+                Text(text = state.value.errorMessageEventSubject)
             }
             Spacer(modifier = Modifier.height(6.dp))
 
             TextField(
-                value = eventDTStartState.value,
+                value = state.value.eventDTStart,
                 onValueChange = { newText ->
-                    eventDTStartState.value = newText
+                    state.value.eventDTStart = newText
 
                     coroutineScope.launch(Dispatchers.Default) {
                         delay(3000)
-                        shouldShowErrorEventDTStartState.value =
+                        state.value.shouldShowErrorEventDTStart =
                             newText.matches(Regex("^\\d{8}T\\d{6}$"))
                     }
 
@@ -498,22 +437,22 @@ fun GenerateQRCode() {
                 },
                 label = { Text("Type The Event Start Time And Date") },
                 placeholder = { Text(text = "ex time in 24  : 20240622T190000") },
-                isError = shouldShowErrorEventDTStartState.value
+                isError = state.value.shouldShowErrorEventDTStart
             )
             Spacer(modifier = Modifier.height(6.dp))
-            if (shouldShowErrorEventDTStartState.value) {
-                Text(text = errorMessageEventDTStartState.value)
+            if (state.value.shouldShowErrorEventDTStart) {
+                Text(text = state.value.errorMessageEventDTStart)
                 Spacer(modifier = Modifier.height(6.dp))
 
             }
             TextField(
-                value = eventDTEndState.value,
+                value = state.value.eventDTEnd,
                 onValueChange = { newText ->
-                    eventDTEndState.value = newText
+                    state.value.eventDTEnd = newText
 
                     coroutineScope.launch(Dispatchers.Default) {
                         delay(3000)
-                        shouldShowErrorEventDTEndState.value =
+                        state.value.shouldShowErrorEventDTEnd =
                             newText.matches(Regex("^\\d{8}T\\d{6}$"))
                     }
 
@@ -521,21 +460,21 @@ fun GenerateQRCode() {
                 },
                 label = { Text("Type The Event End Time And Date") },
                 placeholder = { Text(text = "ex time in 24  : 20240622T190000") },
-                isError = shouldShowErrorEventDTStartState.value
+                isError = state.value.shouldShowErrorEventDTStart
             )
             Spacer(modifier = Modifier.height(6.dp))
-            if (shouldShowErrorEventDTEndState.value) {
-                Text(text = errorMessageEventDTEndState.value)
+            if (state.value.shouldShowErrorEventDTEnd) {
+                Text(text = state.value.errorMessageEventDTEnd)
                 Spacer(modifier = Modifier.height(6.dp))
             }
             TextField(
-                value = eventLocationState.value,
+                value = state.value.eventLocation,
                 onValueChange = { newText ->
-                    eventLocationState.value = newText
+                    state.value.eventLocation = newText
 
                     coroutineScope.launch(Dispatchers.Default) {
                         delay(3000)
-                        shouldShowErrorEventDTEndState.value =
+                        state.value.shouldShowErrorEventDTEnd =
                             newText.isNotEmpty() && newText.length > 4
                     }
 
@@ -543,11 +482,11 @@ fun GenerateQRCode() {
                 },
                 label = { Text("Entering Location for The Event") },
                 placeholder = { Text(text = "ex : Office") },
-                isError = shouldShowErrorEventDTStartState.value
+                isError = state.value.shouldShowErrorEventDTStart
             )
             Spacer(modifier = Modifier.height(6.dp))
-            if (shouldShowErrorEventLocationState.value) {
-                Text(text = errorMessageEventLocationState.value)
+            if (state.value.shouldShowErrorEventLocation) {
+                Text(text = state.value.errorMessageEventLocation)
                 Spacer(modifier = Modifier.height(6.dp))
             }
             // add button for generating
@@ -556,7 +495,7 @@ fun GenerateQRCode() {
         // for share
         Button(
             onClick = {
-                qrBitmapState.value?.let {
+                state.value.qrBitmap?.let {
                     Log.d("QRCode", it.byteCount.toString())
                     val uri = getImageUri(context, it)
                     Log.d("QRCode", uri.toString())
@@ -575,16 +514,16 @@ fun GenerateQRCode() {
                     }
                 }
             },
-            enabled = qrBitmapState.value != null // Disable the button if qrBitmapState is null
+            enabled = state.value.qrBitmap != null // Disable the button if qrBitmapState is null
         ) {
             Text("Generate QR Code")
         }
         // for generate
         Button(
             onClick = {
-                qrBitmapState.value?.let {
-                    Log.d("QRCode", it.byteCount.toString())
-                    val uri = getImageUri(context, it)
+                state.value.qrBitmap.let {
+                    Log.d("QRCode", it?.byteCount.toString())
+                    val uri = it?.let { it1 -> getImageUri(context, it1) }
                     Log.d("QRCode", uri.toString())
                     uri?.let { imageUri ->
                         val shareIntent = Intent().apply {
@@ -601,7 +540,7 @@ fun GenerateQRCode() {
                     }
                 }
             },
-            enabled = qrBitmapState.value != null // Disable the button if qrBitmapState is null
+            enabled = state.value.qrBitmap != null // Disable the button if qrBitmapState is null
         ) {
             Text("Share QR Code")
         }

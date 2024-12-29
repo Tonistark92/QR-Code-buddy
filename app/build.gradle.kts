@@ -102,7 +102,7 @@ dependencies {
     implementation ("io.insert-koin:koin-androidx-compose:3.5.3")
 
     //life cycle
-    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.8.2")
+//    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.8.2")
 }
 kapt {
     correctErrorTypes = true
