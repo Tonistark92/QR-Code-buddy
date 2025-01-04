@@ -130,7 +130,7 @@ fun GenerateQRCode() {
             }
         }
         Spacer(modifier = Modifier.height(6.dp))
-//
+// there will be no wifi for now
 //        if (choosenData.value == "WIFI") {
 //            TextField(
 //                value = state.value.wifiSSID,
@@ -496,7 +496,7 @@ fun GenerateQRCode() {
         Button(
             onClick = {
                 state.value.qrBitmap?.let {
-                    Log.d("QRCode", it.byteCount.toString())
+//                    Log.d("QRCode", it.byteCount.toString())
                     val uri = getImageUri(context, it)
                     Log.d("QRCode", uri.toString())
                     uri?.let { imageUri ->
@@ -522,7 +522,7 @@ fun GenerateQRCode() {
         Button(
             onClick = {
                 state.value.qrBitmap.let {
-                    Log.d("QRCode", it?.byteCount.toString())
+//                    Log.d("QRCode", it?.byteCount.toString())
                     val uri = it?.let { it1 -> getImageUri(context, it1) }
                     Log.d("QRCode", uri.toString())
                     uri?.let { imageUri ->
