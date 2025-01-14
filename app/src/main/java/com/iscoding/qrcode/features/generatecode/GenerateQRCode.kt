@@ -42,6 +42,9 @@ import androidx.core.content.FileProvider
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
+import com.iscoding.qrcode.features.generatecode.widgets.SmsInput
+import com.iscoding.qrcode.features.generatecode.widgets.TelInput
+import com.iscoding.qrcode.features.generatecode.widgets.TextInput
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -52,19 +55,14 @@ import java.io.FileOutputStream
 import java.util.Hashtable
 // ToDo: Formate the data for generating the qr
 // ToDo: create Button for each case
-// ToDo: Move the states to teh viewmodel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenerateQRCode() {
 
 
-    ///////////////////////// wifi
-    val wifiManager =
-        LocalContext.current.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
 
-
-//    val viewmodel = getViewModel<GenerateQRCodeViewModel>()
-    val viewmodel = koinViewModel<GenerateQRCodeViewModel>()
+    val viewmodel = getViewModel<GenerateQRCodeViewModel>()
+//    val viewmodel = koinViewModel<GenerateQRCodeViewModel>()
     val state = viewmodel.state.collectAsState()
 
 
@@ -89,12 +87,11 @@ fun GenerateQRCode() {
                 contentDescription = "QR Code"
             )
         } ?: Image(
-            painter = painterResource(id = android.R.drawable.ic_menu_report_image), // replace with your drawable resource
+            painter = painterResource(id = android.R.drawable.ic_menu_report_image),
             contentDescription = "Placeholder"
         )
         Spacer(modifier = Modifier.height(6.dp))
 
-        ////////////////////////////////////
         var expandedDatatype = remember { mutableStateOf(false) }
         ExposedDropdownMenuBox(
             expanded = expandedDatatype.value,
@@ -130,155 +127,19 @@ fun GenerateQRCode() {
             }
         }
         Spacer(modifier = Modifier.height(6.dp))
-// there will be no wifi for now
-//        if (choosenData.value == "WIFI") {
-//            TextField(
-//                value = state.value.wifiSSID,
-//                onValueChange = { newText ->
-//                    state.value.wifiSSID = newText
-//
-//                    coroutineScope.launch(Dispatchers.Default) {
-//                        delay(3000)
-//                        state.value.shouldShowErrorWifiSSID = newText.isEmpty()
-//                    }
-//
-//                },
-//                label = { Text("Type The number") },
-//            )
-//            Spacer(modifier = Modifier.height(6.dp))
-//            if (state.value.shouldShowErrorWifiSSID) {
-//                Text(text = state.value.shouldShowErrorWifiSSID.value)
-//                Spacer(modifier = Modifier.height(6.dp))
-//            }
-//
-//            Spacer(modifier = Modifier.height(10.dp))
-//
-//            var expandedEncryptionType = remember { mutableStateOf(false) }
-//            ExposedDropdownMenuBox(
-//                expanded = expandedEncryptionType.value,
-//                onExpandedChange = {
-//                    expandedEncryptionType.value = !expandedEncryptionType.value
-//                }
-//            ) {
-//
-//                TextField(
-//                    value = state.value.choosenEncryption,
-//                    onValueChange = { state.value.choosenEncryption = it },
-//                    readOnly = true,
-//                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEncryptionType.value) },
-//                    modifier = Modifier.menuAnchor()
-//                )
-//
-//                ExposedDropdownMenu(
-//                    expanded = expandedEncryptionType.value,
-//                    onDismissRequest = {
-//                        expandedEncryptionType.value = false
-//                    }
-//                ) {
-//                    state.value.encryptionWifiTypesList.forEach { item ->
-//                        DropdownMenuItem(
-//                            text = { Text(item) },
-//                            onClick = {
-//                                choosenWifiEncryptionType.value = item
-//                                choosenEncryptionState.value = item
-//                                expandedEncryptionType.value = false
-//                            }
-//                        )
-//                    }
-//                }
-//            }
-//            if (choosenWifiEncryptionType.value != "nopass") {
-//                Spacer(modifier = Modifier.height(6.dp))
-//                TextField(
-//                    value = wifiPasswordState.value,
-//                    onValueChange = { newText ->
-//                        wifiPasswordState.value = newText
-//
-//                        coroutineScope.launch(Dispatchers.Default) {
-//                            delay(3000)
-//                            shouldShowErrorWifiPasswordState.value = newText.isEmpty()
-//                        }
-//
-//                    },
-//                    label = { Text("Type The number") },
-//                )
-//                Spacer(modifier = Modifier.height(6.dp))
-//                if (shouldShowErrorWifiPasswordState.value) {
-//                    Text(text = errorMessageWifiPasswordState.value)
-//                    Spacer(modifier = Modifier.height(6.dp))
-//                }
-//            }
-//            Row(horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-//                Checkbox(checked = isWifiHiddenState.value, onCheckedChange ={isWifiHiddenState.value = !isWifiHiddenState.value} )
-//            }
-//
-//        }
 
-        if (choosenData.value == "Tel") {
-            TextField(
-                value = state.value.tel,
-                onValueChange = { newText ->
-                    state.value.tel = newText
-
-                    coroutineScope.launch(Dispatchers.Default) {
-                        delay(3000)
-                        val phoneNumberPattern =
-                            Regex("""\+?[0-9]{1,4}?[-.\s]?(\(?\d{1,3}?\)?[-.\s]?){1,4}\d{1,4}""")
-                        state.value.shouldShowErrorTel = newText.matches(phoneNumberPattern)
-                    }
-
-                },
-                label = { Text("Type The number") },
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            if (state.value.shouldShowErrorTel) {
-                Text(text = state.value.errorMessageTel)
-                Spacer(modifier = Modifier.height(6.dp))
-            }
-
-        }
-        if (choosenData.value == "SMS") {
-            TextField(
-                value = state.value.smsNumber,
-                onValueChange = { newText ->
-                    state.value.smsNumber = newText
-
-                    coroutineScope.launch(Dispatchers.Default) {
-                        delay(3000)
-                        val phoneNumberPattern =
-                            Regex("""\+?[0-9]{1,4}?[-.\s]?(\(?\d{1,3}?\)?[-.\s]?){1,4}\d{1,4}""")
-                        state.value.shouldShowErrorSmsNumber = newText.matches(phoneNumberPattern)
-                    }
-
-                },
-                label = { Text("Type The number") },
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            if (state.value.shouldShowErrorSmsNumber) {
-                Text(text = state.value.errorMessageSmsNumber)
-                Spacer(modifier = Modifier.height(6.dp))
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-
-            TextField(
-                value = state.value.smsData,
-                onValueChange = { newText ->
-                    state.value.smsData = newText
-
-                    coroutineScope.launch(Dispatchers.Default) {
-                        delay(3000)
-                        state.value.shouldShowErrorSmsData = newText.length < 4
-                    }
-
-                },
-                label = { Text("Type The number") },
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            if (state.value.shouldShowErrorSmsData) {
-                Text(text = state.value.errorMessageSmsData)
-                Spacer(modifier = Modifier.height(6.dp))
+        fun updateState(newState: GenerateQRCodeState) {
+            coroutineScope.launch {
+                viewmodel.updateState(newState)
             }
         }
+
+        when (choosenData.value) {
+            "Text" -> TextInput(state.value, ::updateState)
+            "Tel" -> TelInput(state.value, ::updateState)
+            "SMS" -> SmsInput(state.value, ::updateState)
+        }
+
 
         if (choosenData.value == "Mail") {
             TextField(
@@ -329,28 +190,7 @@ fun GenerateQRCode() {
 
         }
 
-        if (choosenData.value == "Text") {
-            TextField(
-                value = state.value.plainText,
-                onValueChange = { newText ->
-                    state.value.plainText = newText
 
-                    coroutineScope.launch(Dispatchers.Default) {
-                        delay(3000)
-                        state.value.shouldShowErrorPlainText = newText.length < 4
-                    }
-
-                },
-                label = { Text("Type The Text") },
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            if (state.value.shouldShowErrorGeoLatitude) {
-                Text(text = state.value.errorMessagePlainText)
-                Spacer(modifier = Modifier.height(6.dp))
-            }
-
-
-        }
 
         if (choosenData.value == "Geo") {
             TextField(
@@ -677,6 +517,7 @@ fun generateQRCode(data: String, width: Int = 512, height: Int = 512): Bitmap? {
     }
 
 }
+
 //// Assume the user entered this date-time string
 //val userEnteredDateTimeString = "20240622T190000"
 //

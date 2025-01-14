@@ -1,5 +1,6 @@
 package com.iscoding.qrcode.graph
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -15,6 +16,7 @@ import com.iscoding.qrcode.features.scancode.fromcamera.ScanCodeScreen
 import com.iscoding.qrcode.features.scancode.fromstorage.presentation.ShowAllImagesScreen
 import com.iscoding.qrcode.features.scancode.fromstorage.presentation.ShowQRCodeImageData
 
+@SuppressLint("NewApi")
 @Composable
 fun RootNavigationGraph(navController: NavHostController) {
     NavHost(

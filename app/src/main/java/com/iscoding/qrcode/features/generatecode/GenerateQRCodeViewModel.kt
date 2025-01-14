@@ -11,4 +11,9 @@ class GenerateQRCodeViewModel  () : ViewModel() {
 
     private val _state = MutableStateFlow(GenerateQRCodeState())
     val state get() = _state.asStateFlow()
+
+
+    fun updateState(newState: GenerateQRCodeState) {
+        _state.value = newState
+    }
 }
