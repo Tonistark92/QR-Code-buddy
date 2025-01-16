@@ -3,6 +3,13 @@ package com.iscoding.qrcode.features.generatecode
 import android.graphics.Bitmap
 
 data class GenerateQRCodeState(
+    var formattedText: String = "",
+    var formattedSMS: String = "",
+    var formattedEvent: String = "",
+    var formattedGeo: String = "",
+    var formattedMail: String = "",
+    var formattedTel: String = "",
+    var formattedUrl: String = "",
 
 
     var pickedType: String = "",

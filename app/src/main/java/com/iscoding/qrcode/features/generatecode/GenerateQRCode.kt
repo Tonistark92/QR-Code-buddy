@@ -183,8 +183,9 @@ fun GenerateQRCode() {
             state.value.qrBitmap.let {
 //                    Log.d("QRCode", it?.byteCount.toString())
 
-                val isRightData =
-                    viewmodel.validateInput(state = state.value, chosenData = choosenData.value)
+//                val isRightData =
+//                    viewmodel.validateInput(state = state.value, chosenData = choosenData.value)
+                val isRightData = formatData(choosenData.value,state.value,viewmodel)
                 if (isRightData) {
                     val uri = it?.let { it1 -> getImageUri(context, it1) }
                     Log.d("QRCode", uri.toString())
@@ -232,89 +233,142 @@ fun getImageUri(context: Context, bitmap: Bitmap): Uri? {
     return uri
 }
 
-fun formatData(type: String, data: Map<String, String>): Result<String> {
-    return when (type) {
-        "URL" -> {
-            val url =
-                data["text"] ?: return Result.failure(IllegalArgumentException("URL is missing."))
-            if (url.startsWith("http://") || url.startsWith("https://")) {
-                Result.success(url)
-            } else {
-                Result.failure(IllegalArgumentException("Invalid URL format. Must start with http:// or https://"))
-            }
-        }
+fun formatData(type: String, state: GenerateQRCodeState, viewModel: GenerateQRCodeViewModel) : Boolean{
+    var isFormattedAndReady = false
+     when (type) {
+         "URL" -> {
+             val isUrlReady = viewModel.validateInput("URL", state)
+             if (isUrlReady) {
+//                 viewModel.updateState(state.copy(url = state.url))
+                 viewModel.updateState(state.copy(formattedUrl = state.url))
+                 isFormattedAndReady= true
+             }
+         }
 
-        "Mail" -> {
-            val email =
-                data["text"] ?: return Result.failure(IllegalArgumentException("Email is missing."))
-            if (email.startsWith("mailto:")) {
-                Result.success(email)
-            } else if (email.contains("@")) {
-                Result.success("mailto:$email")
-            } else {
-                Result.failure(IllegalArgumentException("Invalid email address."))
-            }
-        }
+         "Mail" -> {
+             val isEmailReady = viewModel.validateInput("Mail", state)
 
-        "Tel" -> {
-            val phone = data["text"]
-                ?: return Result.failure(IllegalArgumentException("Phone number is missing."))
-            if (phone.startsWith("tel:")) {
-                Result.success(phone)
-            } else {
-                Result.success("tel:$phone")
-            }
-        }
+             if (isEmailReady) {
+                 if (state.mail.startsWith("mailto:")) {
+                     viewModel.updateState(state.copy(mail = state.mail))
+                     isFormattedAndReady= true
 
-        "SMS" -> {
-            val sms = data["text"]
-                ?: return Result.failure(IllegalArgumentException("SMS number is missing."))
-            if (sms.startsWith("sms:")) {
-                Result.success(sms)
-            } else {
-                Result.success("sms:$sms")
-            }
-        }
+                 } else {
+                     viewModel.updateState(state.copy(formattedMail = "mailto:${state.mail}"))
+                     isFormattedAndReady= true
+
+
+                 }
+             }
+         }
+
+         "Tel" -> {
+             val isPhoneReady = viewModel.validateInput("Tel", state)
+             if (isPhoneReady) {
+                 if (state.tel.startsWith("tel:")) {
+                     viewModel.updateState(state.copy(formattedTel = state.tel))
+                     isFormattedAndReady= true
+
+
+                 } else {
+                     viewModel.updateState(state.copy(formattedTel = "tel:${state.tel}"))
+                     isFormattedAndReady= true
+
+                 }
+             }
+         }
+
+         "SMS" -> {
+             val isSmsReady = viewModel.validateInput("SMS", state)
+             if (isSmsReady) {
+                 if (state.formattedSMS.startsWith("sms:")) {
+                     viewModel.updateState(state.copy(smsData = state.smsData))
+                     viewModel.updateState(state.copy(smsNumber = state.smsNumber))
+                     val formatedSMS = """
+                         Tel: ${state.smsNumber}
+                         data: ${state.smsData}
+                     """.trimMargin()
+
+                     viewModel.updateState(state.copy(formattedSMS = formatedSMS))
+                     isFormattedAndReady= true
+
+
+                 } else {
+                     viewModel.updateState(state.copy(smsData = "sms:${state.smsData}"))
+                     viewModel.updateState(state.copy(smsNumber = state.smsNumber))
+                     val formatedSMS = """
+                         sms:
+                         Tel: ${state.smsNumber}
+                         data: ${state.smsData}
+                     """.trimMargin()
+
+                     viewModel.updateState(state.copy(formattedSMS = formatedSMS))
+                     isFormattedAndReady= true
+
+                 }
+             }
+         }
 
         "Geo" -> {
-            val geo = data["text"]
-                ?: return Result.failure(IllegalArgumentException("Geo coordinates are missing."))
-            if (geo.startsWith("geo:")) {
-                Result.success(geo)
-            } else {
-                Result.success("geo:$geo")
+            val isGeoReady = viewModel.validateInput("Geo", state)
+            if(isGeoReady) {
+                if (state.formattedGeo.startsWith("geo:")) {
+                    val formatedGeo = """
+                         lat: ${state.geoLatitude}
+                         long: ${state.geoLongitude}
+                     """.trimMargin()
+
+                    viewModel.updateState(state.copy(formattedGeo = formatedGeo))
+                    isFormattedAndReady= true
+
+                } else {
+                    val formatedGeo = """
+                         geo:
+                         lat: ${state.geoLatitude}
+                         long: ${state.geoLongitude}
+                     """.trimMargin()
+
+                    viewModel.updateState(state.copy(formattedGeo = formatedGeo))
+                    isFormattedAndReady= true
+
+                }
             }
         }
 
         "Event" -> {
-            val summary = data["summary"]
-                ?: return Result.failure(IllegalArgumentException("Event summary is missing."))
-            val dtstart = data["dtstart"]
-                ?: return Result.failure(IllegalArgumentException("Event start date is missing."))
-            val dtend = data["dtend"]
-                ?: return Result.failure(IllegalArgumentException("Event end date is missing."))
-            val location = data["location"]
-                ?: return Result.failure(IllegalArgumentException("Event location is missing."))
+            val isSummaryReady =  viewModel.validateInput("Event", state)
 
-            val event = """
-            BEGIN:VEVENT
-            SUMMARY:$summary
-            DTSTART:$dtstart
-            DTEND:$dtend
-            LOCATION:$location
-            END:VEVENT
+            val formattedEvent = """
+            BEGIN:EVENT
+            SUMMARY:${state.eventSubject}
+            DTSTART:${state.eventDTStart}
+            DTEND:${state.eventDTEnd}
+            LOCATION:${state.eventLocation}
+            END:EVENT
             """.trimIndent()
-            Result.success(event)
+            viewModel.updateState(state.copy(formattedEvent = formattedEvent))
+            isFormattedAndReady= true
+
         }
 
         "Text" -> {
-            val text =
-                data["text"] ?: return Result.failure(IllegalArgumentException("Text is missing."))
-            Result.success(text)
+            val isTextReady = viewModel.validateInput("Text", state)
+            if (isTextReady){
+
+                viewModel.updateState(state.copy(formattedText = state.plainText))
+                isFormattedAndReady= true
+
+            }
+
         }
 
-        else -> Result.failure(IllegalArgumentException("Unknown data type"))
+        else -> {
+            isFormattedAndReady= false
+
+        }
+
     }
+    return isFormattedAndReady
 }
 
 fun generateQRCode(data: String, width: Int = 512, height: Int = 512): Bitmap? {
