@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.net.wifi.WifiManager
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -57,12 +58,12 @@ import org.koin.androidx.compose.koinViewModel
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Hashtable
+
 // ToDo: Formate the data for generating the qr
 // ToDo: create Button for each case
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenerateQRCode() {
-
 
 
 //    val viewmodel = getViewModel<GenerateQRCodeViewModel>()
@@ -147,40 +148,44 @@ fun GenerateQRCode() {
             "Geo" -> GeoInput(state.value, coroutineScope)
             "Event" -> EventInput(state.value, coroutineScope)
         }
-    // add button for generating
+        // add button for generating
 
-        }
-        // for share
-        Button(
-            onClick = {
-                state.value.qrBitmap?.let {
+    }
+    // for share
+    Button(
+        onClick = {
+            state.value.qrBitmap?.let {
 //                    Log.d("QRCode", it.byteCount.toString())
-                    val uri = getImageUri(context, it)
-                    Log.d("QRCode", uri.toString())
-                    uri?.let { imageUri ->
-                        val shareIntent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_STREAM, imageUri)
-                            type = "image/png"
-                        }
-                        shareImageLauncher.launch(
-                            Intent.createChooser(
-                                shareIntent,
-                                "Share QR Code"
-                            )
-                        )
+                val uri = getImageUri(context, it)
+                Log.d("QRCode", uri.toString())
+                uri?.let { imageUri ->
+                    val shareIntent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_STREAM, imageUri)
+                        type = "image/png"
                     }
+                    shareImageLauncher.launch(
+                        Intent.createChooser(
+                            shareIntent,
+                            "Share QR Code"
+                        )
+                    )
                 }
-            },
-            enabled = state.value.qrBitmap != null // Disable the button if qrBitmapState is null
-        ) {
-            Text("Generate QR Code")
-        }
-        // for generate
-        Button(
-            onClick = {
-                state.value.qrBitmap.let {
+            }
+        },
+        enabled = state.value.qrBitmap != null // Disable the button if qrBitmapState is null
+    ) {
+        Text("Generate QR Code")
+    }
+    // for generate
+    Button(
+        onClick = {
+            state.value.qrBitmap.let {
 //                    Log.d("QRCode", it?.byteCount.toString())
+
+                val isRightData =
+                    viewmodel.validateInput(state = state.value, chosenData = choosenData.value)
+                if (isRightData) {
                     val uri = it?.let { it1 -> getImageUri(context, it1) }
                     Log.d("QRCode", uri.toString())
                     uri?.let { imageUri ->
@@ -196,15 +201,18 @@ fun GenerateQRCode() {
                             )
                         )
                     }
+
                 }
-            },
-            enabled = state.value.qrBitmap != null // Disable the button if qrBitmapState is null
-        ) {
-            Text("Share QR Code")
-        }
+                else{
+                    Toast.makeText(context,"Please fit the mentioned examples",Toast.LENGTH_SHORT).show()
+                }
+            }
+        },
+//            enabled = state.value.qrBitmap != null // Disable the button if qrBitmapState is null
+    ) {
+        Text("Share QR Code")
     }
-
-
+}
 
 
 fun getImageUri(context: Context, bitmap: Bitmap): Uri? {
