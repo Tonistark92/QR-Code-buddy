@@ -42,9 +42,13 @@ import androidx.core.content.FileProvider
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
+import com.iscoding.qrcode.features.generatecode.widgets.EventInput
+import com.iscoding.qrcode.features.generatecode.widgets.GeoInput
+import com.iscoding.qrcode.features.generatecode.widgets.MailInput
 import com.iscoding.qrcode.features.generatecode.widgets.SmsInput
 import com.iscoding.qrcode.features.generatecode.widgets.TelInput
 import com.iscoding.qrcode.features.generatecode.widgets.TextInput
+import com.iscoding.qrcode.features.generatecode.widgets.URLInput
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -61,8 +65,8 @@ fun GenerateQRCode() {
 
 
 
-    val viewmodel = getViewModel<GenerateQRCodeViewModel>()
-//    val viewmodel = koinViewModel<GenerateQRCodeViewModel>()
+//    val viewmodel = getViewModel<GenerateQRCodeViewModel>()
+    val viewmodel = koinViewModel<GenerateQRCodeViewModel>()
     val state = viewmodel.state.collectAsState()
 
 
@@ -70,7 +74,7 @@ fun GenerateQRCode() {
     val shareImageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
     val context = LocalContext.current
-    val dataTypesList = listOf("URL", "Mail", "Tel", "SMS", "Geo", "WIFI", "Event", "Text")
+    val dataTypesList = listOf("URL", "Mail", "Tel", "SMS", "Geo", "Event", "Text")
     var choosenData = remember {
         mutableStateOf("Text")
     }
@@ -138,198 +142,12 @@ fun GenerateQRCode() {
             "Text" -> TextInput(state.value, ::updateState)
             "Tel" -> TelInput(state.value, ::updateState)
             "SMS" -> SmsInput(state.value, ::updateState)
+            "Mail" -> MailInput(state.value, coroutineScope)
+            "URL" -> URLInput(state.value, coroutineScope)
+            "Geo" -> GeoInput(state.value, coroutineScope)
+            "Event" -> EventInput(state.value, coroutineScope)
         }
-
-
-        if (choosenData.value == "Mail") {
-            TextField(
-                value = state.value.mail,
-                onValueChange = { newText ->
-                    state.value.mail= newText
-
-                    coroutineScope.launch(Dispatchers.Default) {
-                        delay(3000)
-                        val emailPattern =
-                            Regex("""[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}""")
-                        state.value.shouldShowErrorMail = newText.matches(emailPattern)
-                    }
-
-                },
-                label = { Text("Type The Mail") },
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            if (state.value.shouldShowErrorMail) {
-                Text(text = state.value.errorMessageMail)
-                Spacer(modifier = Modifier.height(6.dp))
-            }
-
-
-        }
-        if (choosenData.value == "URL") {
-            TextField(
-                value = state.value.url,
-                onValueChange = { newText ->
-                    state.value.url = newText
-
-                    coroutineScope.launch(Dispatchers.Default) {
-                        delay(3000)
-                        val urlPattern =
-                            Regex("""https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)""")
-                        state.value.shouldShowErrorUrl = newText.matches(urlPattern)
-                    }
-
-                },
-                label = { Text("Type The URL") },
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            if (state.value.shouldShowErrorUrl) {
-                Text(text = state.value.errorMessageUrl)
-                Spacer(modifier = Modifier.height(6.dp))
-            }
-
-
-        }
-
-
-
-        if (choosenData.value == "Geo") {
-            TextField(
-                value = state.value.geoLatitude,
-                onValueChange = { newText ->
-                    coroutineScope.launch(Dispatchers.Default) {
-                        delay(3000)
-                        val regexPattern = Regex("^-?([1-8]?[1-9]|[1-9]0)\\.{0,1}\\d{0,6}$")
-                        state.value.geoLatitude = newText
-
-                        state.value.shouldShowErrorGeoLatitude =
-                            newText.matches(regexPattern)
-                    }
-
-                },
-                label = { Text("Type The Latitude") },
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            if (state.value.shouldShowErrorGeoLatitude) {
-                Text(text = state.value.errorMessageGeoLatitude)
-                Spacer(modifier = Modifier.height(6.dp))
-            }
-
-            TextField(
-                value = state.value.geoLongitude,
-                onValueChange = { newText ->
-                    state.value.geoLongitude = newText
-                    val regexPattern = Regex("^-?((1?[0-7]?|[0-9]?)[0-9]|180)\\.{0,1}\\d{0,6}$")
-                    coroutineScope.launch(Dispatchers.Default) {
-                        delay(3000)
-                        state.value.geoLongitude = newText
-
-                        state.value.shouldShowErrorGeoLongitude =
-                            newText.matches(regexPattern)
-                    }
-
-
-                },
-                label = { Text("Type The Longitude") },
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            if (state.value.shouldShowErrorGeoLongitude) {
-                Text(text = state.value.errorMessageGeoLongitude)
-                Spacer(modifier = Modifier.height(6.dp))
-            }
-        }
-        if (choosenData.value == "Event") {
-            //added edit texts for all its data
-            TextField(
-                value = state.value.eventSubject,
-                onValueChange = { newText ->
-                    state.value.eventSubject = newText
-
-                    coroutineScope.launch(Dispatchers.IO) {
-                        delay(3000)
-                        state.value.shouldShowErrorEventSubject =
-                            newText.isNotEmpty() && newText.length < 4
-                    }
-
-
-                },
-                label = { Text("Type The Subject For The Event") },
-                placeholder = { Text(text = "ex : Meeting") },
-                isError = state.value.shouldShowErrorEventSubject
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            if (state.value.shouldShowErrorEventSubject) {
-                Text(text = state.value.errorMessageEventSubject)
-            }
-            Spacer(modifier = Modifier.height(6.dp))
-
-            TextField(
-                value = state.value.eventDTStart,
-                onValueChange = { newText ->
-                    state.value.eventDTStart = newText
-
-                    coroutineScope.launch(Dispatchers.Default) {
-                        delay(3000)
-                        state.value.shouldShowErrorEventDTStart =
-                            newText.matches(Regex("^\\d{8}T\\d{6}$"))
-                    }
-
-
-                },
-                label = { Text("Type The Event Start Time And Date") },
-                placeholder = { Text(text = "ex time in 24  : 20240622T190000") },
-                isError = state.value.shouldShowErrorEventDTStart
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            if (state.value.shouldShowErrorEventDTStart) {
-                Text(text = state.value.errorMessageEventDTStart)
-                Spacer(modifier = Modifier.height(6.dp))
-
-            }
-            TextField(
-                value = state.value.eventDTEnd,
-                onValueChange = { newText ->
-                    state.value.eventDTEnd = newText
-
-                    coroutineScope.launch(Dispatchers.Default) {
-                        delay(3000)
-                        state.value.shouldShowErrorEventDTEnd =
-                            newText.matches(Regex("^\\d{8}T\\d{6}$"))
-                    }
-
-
-                },
-                label = { Text("Type The Event End Time And Date") },
-                placeholder = { Text(text = "ex time in 24  : 20240622T190000") },
-                isError = state.value.shouldShowErrorEventDTStart
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            if (state.value.shouldShowErrorEventDTEnd) {
-                Text(text = state.value.errorMessageEventDTEnd)
-                Spacer(modifier = Modifier.height(6.dp))
-            }
-            TextField(
-                value = state.value.eventLocation,
-                onValueChange = { newText ->
-                    state.value.eventLocation = newText
-
-                    coroutineScope.launch(Dispatchers.Default) {
-                        delay(3000)
-                        state.value.shouldShowErrorEventDTEnd =
-                            newText.isNotEmpty() && newText.length > 4
-                    }
-
-
-                },
-                label = { Text("Entering Location for The Event") },
-                placeholder = { Text(text = "ex : Office") },
-                isError = state.value.shouldShowErrorEventDTStart
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            if (state.value.shouldShowErrorEventLocation) {
-                Text(text = state.value.errorMessageEventLocation)
-                Spacer(modifier = Modifier.height(6.dp))
-            }
-            // add button for generating
+    // add button for generating
 
         }
         // for share
@@ -387,7 +205,7 @@ fun GenerateQRCode() {
     }
 
 
-}
+
 
 fun getImageUri(context: Context, bitmap: Bitmap): Uri? {
     val imagesFolder = File(context.cacheDir, "images")
