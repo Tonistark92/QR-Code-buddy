@@ -62,14 +62,14 @@ fun ShowAllImagesScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(16.dp)
         ) {
-            Button(
-                onClick = {
-                    multiplePermissionsState.launchMultiplePermissionRequest()
-                },
-                modifier = Modifier.padding(bottom = 8.dp)
-            ) {
-                Text("Request Permissions")
-            }
+//            Button(
+//                onClick = {
+//                    multiplePermissionsState.launchMultiplePermissionRequest()
+//                },
+//                modifier = Modifier.padding(bottom = 8.dp)
+//            ) {
+//                Text("Request Permissions")
+//            }
 
             if (photosShared.isNotEmpty()) {
                 LazyColumn(
@@ -133,14 +133,16 @@ private fun analyzeImage(
             inputStream?.use {
                 StorageImageAnalyzer (
                     onNoQRCodeFound = {
-                    Toast.makeText(context, "This is not QR Code Image ", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "There is no QR Code in this image ", Toast.LENGTH_LONG).show()
 
                 } ){ qrCodeData ->
                     // Handle QR code data here, e.g., show a dialog, navigate to a new screen
                     Log.d("ShowAllImagesScreen", "Scanned QR Code: $qrCodeData")
                     // Example: Show a Toast
+                    val encodedQrCodeData = Uri.encode(qrCodeData)
+                    val encodedImageUri = Uri.encode(uri.toString())
                     Toast.makeText(context, "QR Code Data: $qrCodeData", Toast.LENGTH_LONG).show()
-                    navController.navigate( "${Screens.ShowQRCodeDataScreen}/${qrCodeData.toString()}/${Uri.encode(uri.toString())}")
+                    navController.navigate("${Screens.ShowQRCodeDataScreen}/$encodedQrCodeData/$encodedImageUri")
                 }.analyze(uri, it)
             }
         } else {

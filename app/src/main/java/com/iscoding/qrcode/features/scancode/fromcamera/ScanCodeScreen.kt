@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Size
 import android.view.MotionEvent
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,15 +30,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -51,6 +56,10 @@ fun ScanCodeScreen() {
     var code by remember {
         mutableStateOf("")
     }
+    val clipboardManager = LocalClipboardManager.current // ClipboardManager instance
+
+    var showDialog by remember { mutableStateOf(false) }
+    var scannedUrl by remember { mutableStateOf("") }
     var tapPosition by remember { mutableStateOf<Offset?>(null) } // Track tap position
 
     val context = LocalContext.current
@@ -97,11 +106,15 @@ fun ScanCodeScreen() {
                             QrCodeAnalyzer { result ->
                                 code = result
                                 if (isValidUrlWithRegex(result)) {
-                                    val intent = Intent(Intent.ACTION_VIEW).apply {
-                                        data = android.net.Uri.parse(result)
-                                    }
-                                    context.startActivity(intent)
+                                    scannedUrl = result
+                                    showDialog = true
                                 }
+//                                if (isValidUrlWithRegex(result)) {
+//                                    val intent = Intent(Intent.ACTION_VIEW).apply {
+//                                        data = android.net.Uri.parse(result)
+//                                    }
+//                                    context.startActivity(intent)
+//                                }
                             }
                         )
 
@@ -165,6 +178,7 @@ fun ScanCodeScreen() {
                 )
             }
         }
+        // Text with long press to copy functionality
         Text(
             text = code,
             fontSize = 20.sp,
@@ -172,6 +186,37 @@ fun ScanCodeScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(32.dp)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onLongPress = {
+                            clipboardManager.setText(AnnotatedString(code))
+                            Toast.makeText(context, "Text copied to clipboard", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+        )
+
+    }
+    // Dialog to confirm opening the URL
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Open URL") },
+            text = { Text(text = "Do you want to open this URL?\n$scannedUrl") },
+            confirmButton = {
+                TextButton(onClick = {
+                    val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(scannedUrl))
+                    context.startActivity(intent)
+                    showDialog = false
+                }) {
+                    Text("Open")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
         )
     }
 }

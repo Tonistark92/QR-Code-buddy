@@ -10,7 +10,6 @@ import com.google.zxing.NotFoundException
 import com.google.zxing.RGBLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 import java.io.InputStream
-
 class StorageImageAnalyzer(
     private val onNoQRCodeFound: () -> Unit,
 
