@@ -13,6 +13,9 @@ data class GenerateQRCodeState(
 
 
     var pickedType: String = "",
+
+
+
     var wifiSSID: String = "",
     var errorMessageWifiSSID: String = "Enter the Network Name",
     var shouldShowErrorWifiSSID: Boolean = false,
@@ -68,7 +71,7 @@ data class GenerateQRCodeState(
 
 
 
-    val isLoading: Boolean = false,
+    var isLoading: Boolean = false,
     var errorMessage: String? = null,
 
     )

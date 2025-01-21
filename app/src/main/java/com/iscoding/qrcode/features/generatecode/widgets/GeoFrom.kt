@@ -17,18 +17,24 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun GeoInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope) {
-    TextField(
+fun GeoInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope, updateState: (GenerateQRCodeState) -> Unit) {
+    ValidatedTextField(
         value = state.geoLatitude,
         onValueChange = { newText ->
+            state.shouldShowErrorGeoLatitude = false
+
             state.geoLatitude = newText
             coroutineScope.launch(Dispatchers.Default) {
                 delay(3000)
                 val regexPattern = Regex("^-?([1-8]?[1-9]|[1-9]0)\\.{0,1}\\d{0,6}$")
                 state.shouldShowErrorGeoLatitude = !regexPattern.matches(newText)
+                updateState(state.copy(geoLatitude = newText))
+
             }
         },
-        label = { Text("Type The Latitude") }
+        label = "Type The Latitude",
+        shouldShowError =state.shouldShowErrorGeoLatitude ,
+        errorMessage =state.errorMessageGeoLongitude
     )
     Spacer(modifier = Modifier.height(6.dp))
     if (state.shouldShowErrorGeoLatitude) {
@@ -36,17 +42,21 @@ fun GeoInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope) {
         Spacer(modifier = Modifier.height(6.dp))
     }
 
-    TextField(
+    ValidatedTextField(
         value = state.geoLongitude,
         onValueChange = { newText ->
+            state.shouldShowErrorGeoLongitude = false
             state.geoLongitude = newText
             coroutineScope.launch(Dispatchers.Default) {
                 delay(3000)
                 val regexPattern = Regex("^-?((1?[0-7]?|[0-9]?)[0-9]|180)\\.{0,1}\\d{0,6}$")
                 state.shouldShowErrorGeoLongitude = !regexPattern.matches(newText)
+                updateState(state.copy(geoLongitude = newText))
             }
         },
-        label = { Text("Type The Longitude") }
+        label = "Type The Longitude",
+        shouldShowError =state.shouldShowErrorGeoLongitude ,
+        errorMessage = state.errorMessageGeoLongitude
     )
     Spacer(modifier = Modifier.height(6.dp))
     if (state.shouldShowErrorGeoLongitude) {

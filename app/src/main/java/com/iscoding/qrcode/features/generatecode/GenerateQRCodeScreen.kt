@@ -14,12 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -27,28 +24,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.iscoding.qrcode.features.generatecode.widgets.EventInput
-import com.iscoding.qrcode.features.generatecode.widgets.GeoInput
-import com.iscoding.qrcode.features.generatecode.widgets.MailInput
-import com.iscoding.qrcode.features.generatecode.widgets.SmsInput
-import com.iscoding.qrcode.features.generatecode.widgets.TelInput
 import com.iscoding.qrcode.features.generatecode.widgets.TextInput
-import com.iscoding.qrcode.features.generatecode.widgets.URLInput
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
-// ToDo: Formate the data for generating the qr
-// ToDo: create Button for each case
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GenerateQRCode() {
+fun GenerateQRCodeScreen() {
 
 
-//    val viewmodel = getViewModel<GenerateQRCodeViewModel>()
     val viewModel = koinViewModel<GenerateQRCodeViewModel>()
     val state = viewModel.state.collectAsState()
 
@@ -68,74 +57,95 @@ fun GenerateQRCode() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        state.value.qrBitmap?.let { bitmap ->
+        if (state.value.isLoading){
+            Spacer(modifier = Modifier.height(25.dp))
+
+            CircularProgressIndicator(color = Color.Black)
+            Spacer(modifier = Modifier.height(25.dp))
+
+        }
+
+        if (state.value.qrBitmap != null){
             Image(
-                bitmap = bitmap.asImageBitmap(),
+                bitmap = state.value.qrBitmap!!.asImageBitmap(),
                 contentDescription = "QR Code"
             )
-        } ?: Image(
-            painter = painterResource(id = android.R.drawable.ic_menu_report_image),
-            contentDescription = "Placeholder"
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-
-        var expandedDatatype = remember { mutableStateOf(false) }
-        ExposedDropdownMenuBox(
-            expanded = expandedDatatype.value,
-            onExpandedChange = {
-                expandedDatatype.value = !expandedDatatype.value
-            }
-        ) {
-
-            TextField(
-                value = state.value.pickedType,
-                onValueChange = { state.value.pickedType = it },
-                readOnly = true,
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDatatype.value) },
-                modifier = Modifier.menuAnchor()
-            )
-
-            ExposedDropdownMenu(
-                expanded = expandedDatatype.value,
-                onDismissRequest = {
-                    expandedDatatype.value = false
-                }
-            ) {
-                dataTypesList.forEach { item ->
-                    DropdownMenuItem(
-                        text = { Text(item) },
-                        onClick = {
-                            choosenData.value = item
-                            state.value.pickedType = item
-                            expandedDatatype.value = false
-                        }
-                    )
-                }
-            }
+            Toast.makeText(
+                context,
+                "Generated",
+                Toast.LENGTH_SHORT
+            ).show()
         }
-        Spacer(modifier = Modifier.height(6.dp))
+        else{
+            Image(
+                painter = painterResource(id = android.R.drawable.ic_menu_report_image),
+                contentDescription = "Placeholder"
+            )
+        }
+
+        Spacer(modifier = Modifier.height(25.dp))
+
+//        val isExpanded = remember { mutableStateOf(false) }
+//
+//        ExposedDropdownMenuBox(
+//            expanded = isExpanded.value,
+//            onExpandedChange = {
+//                isExpanded.value = !isExpanded.value
+//            },
+//            modifier = Modifier.fillMaxWidth().wrapContentHeight()
+//        ) {
+//
+//            TextField(
+//                value = state.value.pickedType,
+//                onValueChange = {  },
+//                readOnly = true,
+//                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded.value) },
+//                modifier = Modifier.menuAnchor()
+//            )
+//
+//            ExposedDropdownMenu(
+//                expanded = isExpanded.value,
+//                onDismissRequest = {
+//                    isExpanded.value = false
+//                }
+//            ) {
+//                dataTypesList.forEach { item ->
+//                    DropdownMenuItem(
+//                        text = { Text(item) },
+//                        onClick = {
+//                            choosenData.value = item
+//                            state.value.pickedType = item
+//                            state.value.qrBitmap = null
+//                            isExpanded.value = false
+//                        }
+//                    )
+//                }
+//            }
+//        }
+        Spacer(modifier = Modifier.height(26.dp))
 
         fun updateState(newState: GenerateQRCodeState) {
             coroutineScope.launch {
                 viewModel.updateState(newState)
             }
         }
-
-        when (choosenData.value) {
-            "Text" -> TextInput(state.value, ::updateState)
-            "Tel" -> TelInput(state.value, ::updateState)
-            "SMS" -> SmsInput(state.value, ::updateState)
-            "Mail" -> MailInput(state.value, coroutineScope)
-            "URL" -> URLInput(state.value, coroutineScope)
-            "Geo" -> GeoInput(state.value, coroutineScope)
-            "Event" -> EventInput(state.value, coroutineScope)
-        }
+        TextInput(state.value, ::updateState)
+/// update state and send corotien
+//        when (state.value.pickedType) {
+//            "Text" -> TextInput(state.value, ::updateState)
+//            "Tel" -> TelInput(state.value, ::updateState)
+//            "SMS" -> SmsInput(state.value, ::updateState)
+//            "Mail" -> MailInput(state.value, coroutineScope, ::updateState)
+//            "URL" -> URLInput(state.value, coroutineScope,::updateState)
+//            "Geo" -> GeoInput(state.value, coroutineScope, ::updateState)
+//            "Event" -> EventInput(state.value, coroutineScope, ::updateState)
+//        }
         // for share
         Button(
             onClick = {
                 state.value.qrBitmap?.let {
 //                    Log.d("QRCode", it.byteCount.toString())
-                    val uri =viewModel. getImageUri(context, it)
+                    val uri = viewModel.getImageUri(context, it)
                     Log.d("QRCode", uri.toString())
                     uri?.let { imageUri ->
                         val shareIntent = Intent().apply {
@@ -152,49 +162,38 @@ fun GenerateQRCode() {
                     }
                 }
             },
-            enabled = state.value.qrBitmap != null
+//            enabled = state.value.qrBitmap != null
         ) {
-            Text("Generate QR Code")
+            Text("Share QR Code")
         }
         // for generate
         Button(
             onClick = {
-                state.value.qrBitmap.let {
-//                    Log.d("QRCode", it?.byteCount.toString())
+                Toast.makeText(context, "Dost", Toast.LENGTH_SHORT).show()
+                val isRightData = viewModel.formatData("Text", state.value)
+                if (isRightData) {
+                    state.value.isLoading = true
+                    Log.d("LOADING", "IS Loading in screen    "+"${state.value.isLoading}")
+                    viewModel.generateQRCode(state.value.formattedText, coroutineScope)
 
-//                val isRightData =
-//                    viewmodel.validateInput(state = state.value, chosenData = choosenData.value)
-                    val isRightData = viewModel.formatData(choosenData.value,state.value)
-                    if (isRightData) {
-                        val uri = it?.let { it1 -> viewModel. getImageUri(context, it1) }
-                        Log.d("QRCode", uri.toString())
-                        uri?.let { imageUri ->
-                            val shareIntent = Intent().apply {
-                                action = Intent.ACTION_SEND
-                                putExtra(Intent.EXTRA_STREAM, imageUri)
-                                type = "image/png"
-                            }
-                            shareImageLauncher.launch(
-                                Intent.createChooser(
-                                    shareIntent,
-                                    "Share QR Code"
-                                )
-                            )
-                        }
-
-                    }
-                    else{
-                        Toast.makeText(context,"Please fit the mentioned examples",Toast.LENGTH_SHORT).show()
-                    }
+                } else {
+                    Toast.makeText(
+                        context,
+                        "Please fit the mentioned examples",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             },
 //            enabled = state.value.qrBitmap != null // Disable the button if qrBitmapState is null
         ) {
-            Text("Share QR Code")
+            Text("Generate QR Code")
         }
+
     }
 
+
 }
+
 
 
 //// Assume the user entered this date-time string

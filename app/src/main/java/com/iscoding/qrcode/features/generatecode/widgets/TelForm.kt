@@ -11,6 +11,7 @@ fun TelInput(state: GenerateQRCodeState, updateState: (GenerateQRCodeState) -> U
         errorMessage = state.errorMessageTel,
         shouldShowError = state.shouldShowErrorTel,
         onValueChange = { newText ->
+            state.shouldShowErrorTel = false
             updateState(state.copy(tel = newText))
         }
     )

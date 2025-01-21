@@ -16,18 +16,24 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun MailInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope) {
-    TextField(
+fun MailInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope,updateState: (GenerateQRCodeState) -> Unit) {
+    ValidatedTextField(
         value = state.mail,
+        errorMessage = state.errorMessagePlainText,
+        shouldShowError = state.shouldShowErrorPlainText,
         onValueChange = { newText ->
-            state.mail = newText
+            state.shouldShowErrorMail= false
+//            state.mail = newText
             coroutineScope.launch(Dispatchers.Default) {
                 delay(3000)
                 val emailPattern = Regex("""[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}""")
                 state.shouldShowErrorMail = !emailPattern.matches(newText)
+
             }
+            updateState(state.copy(mail = newText))
+
         },
-        label = { Text("Type The Mail") }
+        label = "Type The Mail"
     )
     Spacer(modifier = Modifier.height(6.dp))
     if (state.shouldShowErrorMail) {

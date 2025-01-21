@@ -16,10 +16,11 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun URLInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope) {
-    TextField(
+fun URLInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope,updateState: (GenerateQRCodeState) -> Unit) {
+    ValidatedTextField(
         value = state.url,
         onValueChange = { newText ->
+            state.shouldShowErrorUrl= false
             state.url = newText
             coroutineScope.launch(Dispatchers.Default) {
                 delay(3000)
@@ -27,7 +28,9 @@ fun URLInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope) {
                 state.shouldShowErrorUrl = !urlPattern.matches(newText)
             }
         },
-        label = { Text("Type The URL") }
+        label = "Type The URL",
+        shouldShowError =state.shouldShowErrorUrl ,
+        errorMessage = state.errorMessageUrl
     )
     Spacer(modifier = Modifier.height(6.dp))
     if (state.shouldShowErrorUrl) {

@@ -17,19 +17,22 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun EventInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope) {
-    TextField(
+fun EventInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope, updateState: (GenerateQRCodeState) -> Unit) {
+    ValidatedTextField(
         value = state.eventSubject,
         onValueChange = { newText ->
-            state.eventSubject = newText
+            state.shouldShowErrorEventSubject = false
+//            state.eventSubject = newText
             coroutineScope.launch(Dispatchers.IO) {
                 delay(3000)
                 state.shouldShowErrorEventSubject = newText.isNotEmpty() && newText.length < 4
+                updateState(state.copy(eventSubject = newText))
+
             }
         },
-        label = { Text("Type The Subject For The Event") },
-        placeholder = { Text(text = "e.g., Meeting") },
-        isError = state.shouldShowErrorEventSubject
+        label = "e.g., Meeting",
+        shouldShowError = state.shouldShowErrorEventSubject,
+        errorMessage =state.errorMessageEventSubject
     )
     Spacer(modifier = Modifier.height(6.dp))
     if (state.shouldShowErrorEventSubject) {
@@ -37,18 +40,24 @@ fun EventInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope) {
         Spacer(modifier = Modifier.height(6.dp))
     }
 
-    TextField(
+    ValidatedTextField(
         value = state.eventDTStart,
         onValueChange = { newText ->
+            state.shouldShowErrorEventDTStart = false
+
             state.eventDTStart = newText
             coroutineScope.launch(Dispatchers.Default) {
                 delay(3000)
                 state.shouldShowErrorEventDTStart = !Regex("^\\d{8}T\\d{6}$").matches(newText)
+                updateState(state.copy(eventDTStart = newText))
+
             }
         },
-        label = { Text("Type The Event Start Time And Date") },
-        placeholder = { Text(text = "e.g., 20240622T190000") },
-        isError = state.shouldShowErrorEventDTStart
+        label = "Type The Event Start Time And Date",
+
+        shouldShowError = state.shouldShowErrorEventDTStart,
+        errorMessage =state.errorMessageEventDTStart
+//        placeholder = { Text(text = "e.g., 20240622T190000") },
     )
     Spacer(modifier = Modifier.height(6.dp))
     if (state.shouldShowErrorEventDTStart) {
@@ -56,18 +65,22 @@ fun EventInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope) {
         Spacer(modifier = Modifier.height(6.dp))
     }
 
-    TextField(
+    ValidatedTextField(
         value = state.eventDTEnd,
         onValueChange = { newText ->
+            state.shouldShowErrorEventDTEnd = false
             state.eventDTEnd = newText
             coroutineScope.launch(Dispatchers.Default) {
                 delay(3000)
                 state.shouldShowErrorEventDTEnd = !Regex("^\\d{8}T\\d{6}$").matches(newText)
+                updateState(state.copy(eventDTEnd = newText))
+
             }
         },
-        label = { Text("Type The Event End Time And Date") },
-        placeholder = { Text(text = "e.g., 20240622T210000") },
-        isError = state.shouldShowErrorEventDTEnd
+        label = "Type The Event End Time And Date",
+        shouldShowError = state.shouldShowErrorEventDTEnd,
+        errorMessage =state.errorMessageEventDTEnd
+//        placeholder = { Text(text = "e.g., 20240622T210000") },
     )
     Spacer(modifier = Modifier.height(6.dp))
     if (state.shouldShowErrorEventDTEnd) {
@@ -75,18 +88,22 @@ fun EventInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope) {
         Spacer(modifier = Modifier.height(6.dp))
     }
 
-    TextField(
+    ValidatedTextField(
         value = state.eventLocation,
         onValueChange = { newText ->
+            state.shouldShowErrorEventLocation = false
             state.eventLocation = newText
             coroutineScope.launch(Dispatchers.Default) {
                 delay(3000)
                 state.shouldShowErrorEventLocation = newText.isEmpty() || newText.length <= 4
+                updateState(state.copy(eventLocation = newText))
+
             }
         },
-        label = { Text("Type The Location for The Event") },
-        placeholder = { Text(text = "e.g., Office") },
-        isError = state.shouldShowErrorEventLocation
+        label = "Type The Location for The Event",
+        shouldShowError = state.shouldShowErrorEventLocation,
+        errorMessage =state.errorMessageEventLocation
+//        placeholder = { Text(text = "e.g., Office") },
     )
     Spacer(modifier = Modifier.height(6.dp))
     if (state.shouldShowErrorEventLocation) {

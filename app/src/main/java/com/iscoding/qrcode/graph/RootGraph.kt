@@ -1,7 +1,6 @@
 package com.iscoding.qrcode.graph
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -9,7 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.iscoding.qrcode.features.generatecode.GenerateQRCode
+import com.iscoding.qrcode.features.generatecode.GenerateQRCodeScreen
 import com.iscoding.qrcode.features.generatecode.MainScreen
 import com.iscoding.qrcode.features.scancode.AskFromCameraOrStorageScreen
 import com.iscoding.qrcode.features.scancode.fromcamera.ScanCodeScreen
@@ -32,13 +31,13 @@ fun RootNavigationGraph(navController: NavHostController) {
 
         }
         composable(route = Screens.GenerateCode) {
-            GenerateQRCode()
+            GenerateQRCodeScreen()
         }
         composable(route = Screens.ShowAllImagesScreen) {
            ShowAllImagesScreen(navController = navController)
         }
         composable(route = Screens.GenerateCode) {
-            GenerateQRCode()
+            GenerateQRCodeScreen()
         }
         composable(route = Screens.AskFromCameraOrStorageScreen) {
            AskFromCameraOrStorageScreen(navController = navController)
