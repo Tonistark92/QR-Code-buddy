@@ -4,15 +4,17 @@ import androidx.compose.runtime.Composable
 import com.iscoding.qrcode.features.generatecode.GenerateQRCodeState
 
 @Composable
-fun TelInput(state: GenerateQRCodeState, updateState: (GenerateQRCodeState) -> Unit) {
+fun TelInput(state: GenerateQRCodeState,
+             updateState: (String,Boolean) -> Unit) {
     ValidatedTextField(
         label = "Type The number",
         value = state.tel,
         errorMessage = state.errorMessageTel,
         shouldShowError = state.shouldShowErrorTel,
         onValueChange = { newText ->
-            state.shouldShowErrorTel = false
-            updateState(state.copy(tel = newText))
+            updateState(newText,false)
+//            state.shouldShowErrorTel = false
+//            updateState(state.copy(tel = newText))
         }
     )
 }

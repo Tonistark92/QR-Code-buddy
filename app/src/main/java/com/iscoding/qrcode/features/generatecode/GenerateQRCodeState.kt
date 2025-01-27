@@ -12,7 +12,7 @@ data class GenerateQRCodeState(
     var formattedUrl: String = "",
 
 
-    var pickedType: String = "",
+    var pickedType: String = "Text",
 
 
 

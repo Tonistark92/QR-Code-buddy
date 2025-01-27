@@ -8,6 +8,7 @@ import org.koin.core.context.GlobalContext.startKoin
 
 class MyApp  : Application() {
     override fun onCreate() {
+        PreferencesManager.init(this)
         super.onCreate()
         startKoin {
             androidContext(this@MyApp)

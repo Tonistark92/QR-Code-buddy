@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.iscoding.qrcode"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.iscoding.qrcode"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -19,6 +19,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        resourceConfigurations.plus(listOf("ar", "en"))
+
     }
 
     buildTypes {
@@ -62,6 +64,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.common.ktx)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.material3.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -69,6 +72,11 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+//
+    implementation (libs.androidx.animation)
+    implementation (libs.androidx.foundation)
+
 
     // Activity Compose
 //    implementation ("androidx.activity:activity-compose:1.9.0")

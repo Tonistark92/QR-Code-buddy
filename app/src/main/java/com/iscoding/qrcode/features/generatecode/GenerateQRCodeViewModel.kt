@@ -331,9 +331,13 @@ class GenerateQRCodeViewModel() : ViewModel() {
     fun generateQRCode(data: String, coroutineScope: CoroutineScope, width: Int = 512, height: Int = 512) {
         Log.d("LOADING", "In the Generation")
 
-         try {
-             Log.d("LOADING", "In the Generation  in try" )
+        try {
+            Log.d("LOADING", "In the Generation  in try" )
 
+            _state.value =_state.value.copy(
+//                 qrBitmap = bmp,
+                isLoading =true
+            )
             val writer = QRCodeWriter()
             val hints = Hashtable<EncodeHintType, Any>()
             hints[EncodeHintType.CHARACTER_SET] = "UTF-8"
@@ -341,29 +345,33 @@ class GenerateQRCodeViewModel() : ViewModel() {
             val width = bitMatrix.width
             val height = bitMatrix.height
             val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
-//            coroutineScope.launch(Dispatchers.Default) {
-                for (x in 0 until width) {
-                    for (y in 0 until height) {
-                        bmp.setPixel(
-                            x,
-                            y,
-                            if (bitMatrix[x, y]) Color.Black.toArgb() else Color.White.toArgb()
-                        )
-                    }
+            coroutineScope.launch(Dispatchers.Default) {
+            for (x in 0 until width) {
+                for (y in 0 until height) {
+                    bmp.setPixel(
+                        x,
+                        y,
+                        if (bitMatrix[x, y]) Color.Black.toArgb() else Color.White.toArgb()
+                    )
                 }
-                _state.value.qrBitmap =bmp
-                _state.value.isLoading =false
-                Log.d("LOADING", "IS Loading in viewmodel"+"${state.value.isLoading}")
-                Log.d("LOADING", "the image      "+"   ${state.value.qrBitmap?.generationId}")
+            }
+            _state.value =_state.value.copy(
+                qrBitmap = bmp,
+                isLoading =false
+            )
+//                _state.value.isLoading =false
+            Log.d("LOADING", "IS Loading in viewmodel"+"${state.value.isLoading}")
+            Log.d("LOADING", "the image      "+"   ${state.value.qrBitmap?.generationId}")
 
 //                bmp
-//            }
+            }
 
 
 
         } catch (e: Exception) {
             e.printStackTrace()
             null
+            //todo show error
         }
 
     }

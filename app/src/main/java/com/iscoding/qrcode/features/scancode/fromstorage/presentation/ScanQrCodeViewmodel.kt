@@ -16,7 +16,7 @@ class ScanQrCodeViewmodel  : ViewModel() {
 
 
     fun loadShared(c: Context) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             val loadedPhotos = loadPhotosFromExternalStorage(c)
             photosStateShared.value = loadedPhotos
         }

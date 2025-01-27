@@ -16,17 +16,18 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun URLInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope,updateState: (GenerateQRCodeState) -> Unit) {
+fun URLInput(state: GenerateQRCodeState,
+             updateState: (String,Boolean) -> Unit) {
     ValidatedTextField(
         value = state.url,
         onValueChange = { newText ->
-            state.shouldShowErrorUrl= false
-            state.url = newText
-            coroutineScope.launch(Dispatchers.Default) {
-                delay(3000)
-                val urlPattern = Regex("""https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)""")
-                state.shouldShowErrorUrl = !urlPattern.matches(newText)
-            }
+//            updateState(newText,false)
+//            coroutineScope.launch(Dispatchers.Default) {
+//                delay(3000)
+            val urlPattern = Regex("""https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)""")
+//                state.shouldShowErrorUrl = !urlPattern.matches(newText)
+            updateState(newText,!urlPattern.matches(newText))
+//            }
         },
         label = "Type The URL",
         shouldShowError =state.shouldShowErrorUrl ,

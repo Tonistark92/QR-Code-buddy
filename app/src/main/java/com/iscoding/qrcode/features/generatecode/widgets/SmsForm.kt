@@ -6,7 +6,9 @@ import com.iscoding.qrcode.features.generatecode.GenerateQRCodeState
 
 
 @Composable
-fun SmsInput(state: GenerateQRCodeState, updateState: (GenerateQRCodeState) -> Unit) {
+fun SmsInput(state: GenerateQRCodeState,
+             updateStateSmsNumber: (String) -> Unit,
+             updateStateSmsData: (String) -> Unit,) {
     Column {
         ValidatedTextField(
             label = "Type The number",
@@ -14,7 +16,8 @@ fun SmsInput(state: GenerateQRCodeState, updateState: (GenerateQRCodeState) -> U
             errorMessage = state.errorMessageSmsNumber,
             shouldShowError = state.shouldShowErrorSmsNumber,
             onValueChange = { newText ->
-                updateState(state.copy(smsNumber = newText))
+                updateStateSmsNumber(newText)
+//                updateState(state.copy(smsNumber = newText))
             }
         )
         ValidatedTextField(
@@ -23,7 +26,8 @@ fun SmsInput(state: GenerateQRCodeState, updateState: (GenerateQRCodeState) -> U
             errorMessage = state.errorMessageSmsData,
             shouldShowError = state.shouldShowErrorSmsData,
             onValueChange = { newText ->
-                updateState(state.copy(smsData = newText))
+                updateStateSmsData(newText)
+//                updateState(state.copy(smsData = newText))
             }
         )
     }

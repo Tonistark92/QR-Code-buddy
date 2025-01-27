@@ -10,13 +10,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +36,14 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.iscoding.qrcode.R
+import com.iscoding.qrcode.features.generatecode.widgets.EventInput
+import com.iscoding.qrcode.features.generatecode.widgets.GeoInput
+import com.iscoding.qrcode.features.generatecode.widgets.MailInput
+import com.iscoding.qrcode.features.generatecode.widgets.SmsInput
+import com.iscoding.qrcode.features.generatecode.widgets.TelInput
 import com.iscoding.qrcode.features.generatecode.widgets.TextInput
+import com.iscoding.qrcode.features.generatecode.widgets.URLInput
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -47,81 +61,94 @@ fun GenerateQRCodeScreen() {
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
     val context = LocalContext.current
     val dataTypesList = listOf("URL", "Mail", "Tel", "SMS", "Geo", "Event", "Text")
-    var choosenData = remember {
-        mutableStateOf("Text")
-    }
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(50.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        if (state.value.isLoading){
-            Spacer(modifier = Modifier.height(25.dp))
-
-            CircularProgressIndicator(color = Color.Black)
-            Spacer(modifier = Modifier.height(25.dp))
+        if (state.value.isLoading) {
+//            Spacer(modifier = Modifier.height(25.dp))
+//
+////            CircularProgressIndicator(color = Color.Black)
+////            CircularProgressIndicator(
+////                modifier = Modifier.size(64.dp),
+////                strokeWidth = 6.dp
+////            )
+//            Text("Loaddding") //todo CircularProgressIndicator crash i replaced it by text to trace
+//            Spacer(modifier = Modifier.height(25.dp))
 
         }
 
-        if (state.value.qrBitmap != null){
+        if (state.value.qrBitmap != null) {
             Image(
                 bitmap = state.value.qrBitmap!!.asImageBitmap(),
                 contentDescription = "QR Code"
             )
-            Toast.makeText(
-                context,
-                "Generated",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-        else{
+//            Toast.makeText(
+//                context,
+//                "Generated",
+//                Toast.LENGTH_SHORT
+//            ).show()
+        } else {
             Image(
-                painter = painterResource(id = android.R.drawable.ic_menu_report_image),
+                painter = painterResource(id = R.drawable.no_pictures),
                 contentDescription = "Placeholder"
             )
         }
 
         Spacer(modifier = Modifier.height(25.dp))
 
-//        val isExpanded = remember { mutableStateOf(false) }
-//
-//        ExposedDropdownMenuBox(
-//            expanded = isExpanded.value,
-//            onExpandedChange = {
-//                isExpanded.value = !isExpanded.value
-//            },
-//            modifier = Modifier.fillMaxWidth().wrapContentHeight()
-//        ) {
-//
-//            TextField(
-//                value = state.value.pickedType,
-//                onValueChange = {  },
-//                readOnly = true,
-//                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded.value) },
-//                modifier = Modifier.menuAnchor()
-//            )
-//
-//            ExposedDropdownMenu(
-//                expanded = isExpanded.value,
-//                onDismissRequest = {
-//                    isExpanded.value = false
-//                }
-//            ) {
-//                dataTypesList.forEach { item ->
-//                    DropdownMenuItem(
-//                        text = { Text(item) },
-//                        onClick = {
-//                            choosenData.value = item
-//                            state.value.pickedType = item
-//                            state.value.qrBitmap = null
-//                            isExpanded.value = false
-//                        }
-//                    )
-//                }
-//            }
-//        }
+        val isExpanded = remember { mutableStateOf(false) }
+
+        ExposedDropdownMenuBox(
+            expanded = isExpanded.value,
+            onExpandedChange = {
+                isExpanded.value = !isExpanded.value
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+        ) {
+
+            TextField(
+                value = state.value.pickedType,
+                onValueChange = {
+
+                },
+                readOnly = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded.value) },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
+                expanded = isExpanded.value,
+                onDismissRequest = {
+                    isExpanded.value = false
+
+                }
+            ) {
+                dataTypesList.forEach { item ->
+                    DropdownMenuItem(
+                        text = { Text(item) },
+                        onClick = {
+                            Toast.makeText(
+                                context,
+                                "Dost list",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            state.value.pickedType = item
+                            state.value.qrBitmap = null
+                            isExpanded.value = false
+                        }
+                    )
+                }
+            }
+        }
         Spacer(modifier = Modifier.height(26.dp))
 
         fun updateState(newState: GenerateQRCodeState) {
@@ -129,17 +156,63 @@ fun GenerateQRCodeScreen() {
                 viewModel.updateState(newState)
             }
         }
-        TextInput(state.value, ::updateState)
+
+
 /// update state and send corotien
-//        when (state.value.pickedType) {
-//            "Text" -> TextInput(state.value, ::updateState)
-//            "Tel" -> TelInput(state.value, ::updateState)
-//            "SMS" -> SmsInput(state.value, ::updateState)
-//            "Mail" -> MailInput(state.value, coroutineScope, ::updateState)
-//            "URL" -> URLInput(state.value, coroutineScope,::updateState)
-//            "Geo" -> GeoInput(state.value, coroutineScope, ::updateState)
-//            "Event" -> EventInput(state.value, coroutineScope, ::updateState)
-//        }
+        when (state.value.pickedType) {
+            "Text" -> TextInput(state.value) { text ->
+                updateState(
+                    state.value.copy(
+                        plainText = text
+                    )
+                )
+            }
+
+            "Tel" -> TelInput(state.value) { tel, error ->
+                updateState(
+                    state.value.copy(
+                        tel = tel,
+                        shouldShowErrorTel = error
+                    )
+                )
+            }
+
+            "SMS" -> SmsInput(state.value, updateStateSmsData = { data ->
+                updateState(
+                    state.value.copy(
+                        smsData = data
+                    )
+                )
+            }, updateStateSmsNumber = { number ->
+                updateState(
+                    state.value.copy(
+                        smsNumber = number
+                    )
+                )
+            })
+
+            "Mail" -> MailInput(state.value) { mail, showError ->
+                updateState(
+                    state.value.copy(
+                        mail = mail,
+                        shouldShowErrorMail = showError
+                    )
+                )
+            }
+
+
+            "URL" -> URLInput(state.value) { url, showError ->
+                updateState(
+                    state.value.copy(
+                        url = url,
+                        shouldShowErrorUrl = showError
+                    )
+                )
+            }
+
+            "Geo" -> GeoInput(state.value, coroutineScope, ::updateState)
+            "Event" -> EventInput(state.value, coroutineScope, ::updateState)
+        }
         // for share
         Button(
             onClick = {
@@ -170,11 +243,11 @@ fun GenerateQRCodeScreen() {
         Button(
             onClick = {
                 Toast.makeText(context, "Dost", Toast.LENGTH_SHORT).show()
-                val isRightData = viewModel.formatData("Text", state.value)
+                val isRightData = viewModel.formatData(state.value.pickedType, state.value)
                 if (isRightData) {
                     state.value.isLoading = true
-                    Log.d("LOADING", "IS Loading in screen    "+"${state.value.isLoading}")
-                    viewModel.generateQRCode(state.value.formattedText, coroutineScope)
+                    Log.d("LOADING", "IS Loading in screen    " + "${state.value.isLoading}")
+                    viewModel.generateQRCode(state.value.plainText, coroutineScope)
 
                 } else {
                     Toast.makeText(
@@ -193,7 +266,6 @@ fun GenerateQRCodeScreen() {
 
 
 }
-
 
 
 //// Assume the user entered this date-time string

@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -47,7 +50,7 @@ fun ShowAllImagesScreen(navController: NavController) {
     val viewModel: ScanQrCodeViewmodel = viewModel()
     val multiplePermissionsState = rememberMultiplePermissionsState(
         listOf(
-            android.Manifest.permission.READ_EXTERNAL_STORAGE, android.Manifest.permission.CAMERA
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
         )
     )
 
@@ -56,37 +59,30 @@ fun ShowAllImagesScreen(navController: NavController) {
         photosShared = viewModel.photosStateShared.value
         Log.d("TAGEff", photosShared.toString())
     }
+Box(modifier = Modifier.padding(16.dp).fillMaxSize(), contentAlignment = Alignment.Center){
+    if (viewModel.photosStateShared.value.isEmpty()){
+        CircularProgressIndicator(
+            modifier = Modifier.width(64.dp),
+            color = Color(0xFF138173),
+            trackColor = Color(0xFF8AE5D0),
 
-    Scaffold {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(16.dp)
+        )
+    }
+    if (photosShared.isNotEmpty()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-//            Button(
-//                onClick = {
-//                    multiplePermissionsState.launchMultiplePermissionRequest()
-//                },
-//                modifier = Modifier.padding(bottom = 8.dp)
-//            ) {
-//                Text("Request Permissions")
-//            }
-
-            if (photosShared.isNotEmpty()) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    items(photosShared) { photo ->
-                        PhotoItem(photo = photo) { selectedUri ->
-                            // Handle click on the image here
-                            Log.d("ClickedImage", "Clicked on image: $selectedUri")
-                            analyzeImage(context.contentResolver,context, selectedUri, navController)
-                        }
-                    }
+            items(photosShared) { photo ->
+                PhotoItem(photo = photo) { selectedUri ->
+                    // Handle click on the image here
+                    Log.d("ClickedImage", "Clicked on image: $selectedUri")
+                    analyzeImage(context.contentResolver,context, selectedUri, navController)
                 }
             }
         }
     }
+}
 }
 
 @Composable

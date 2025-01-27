@@ -6,16 +6,17 @@ import com.iscoding.qrcode.features.generatecode.GenerateQRCodeState
 
 
 @Composable
-fun TextInput(state: GenerateQRCodeState, updateState: (GenerateQRCodeState) -> Unit) {
+fun TextInput(state: GenerateQRCodeState,
+              updateState: (String) -> Unit) {
     ValidatedTextField(
         label = "Type The Text",
         value = state.plainText,
         errorMessage = state.errorMessagePlainText,
         shouldShowError = state.shouldShowErrorPlainText,
         onValueChange = { newText ->
-            Log.d("ISLAM",newText+"IN Form//////////////")
-            updateState(state.copy(plainText = newText))
-            Log.d("ISLAM",state.plainText+"IN Form STATE//////////////")
+//            Log.d("ISLAM",newText+"IN Form//////////////")
+            updateState(newText)
+//            Log.d("ISLAM",state.plainText+"IN Form STATE//////////////")
 
         }
     )
