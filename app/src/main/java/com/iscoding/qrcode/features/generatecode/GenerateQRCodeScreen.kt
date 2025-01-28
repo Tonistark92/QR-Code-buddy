@@ -152,9 +152,7 @@ fun GenerateQRCodeScreen() {
         Spacer(modifier = Modifier.height(26.dp))
 
         fun updateState(newState: GenerateQRCodeState) {
-            coroutineScope.launch {
                 viewModel.updateState(newState)
-            }
         }
 
 
@@ -202,12 +200,15 @@ fun GenerateQRCodeScreen() {
 
 
             "URL" -> URLInput(state.value) { url, showError ->
+                Log.d("DATA",url + "+++++++++++11111111111")
                 updateState(
-                    state.value.copy(
+                    state.value.copy (
                         url = url,
                         shouldShowErrorUrl = showError
                     )
                 )
+                Log.d("DATA",state.value.url + "++++++++++++22222222222")
+
             }
 
             "Geo" -> GeoInput(state.value, coroutineScope, ::updateState)
@@ -247,7 +248,23 @@ fun GenerateQRCodeScreen() {
                 if (isRightData) {
                     state.value.isLoading = true
                     Log.d("LOADING", "IS Loading in screen    " + "${state.value.isLoading}")
-                    viewModel.generateQRCode(state.value.plainText, coroutineScope)
+                    when (state.value.pickedType) {
+                        "Text" ->  viewModel.generateQRCode(state.value.formattedText, coroutineScope)
+
+                        "Tel" -> viewModel.generateQRCode(state.value.formattedTel, coroutineScope)
+
+                        "SMS" ->  viewModel.generateQRCode(state.value.formattedSMS, coroutineScope)
+
+                        "Mail" -> viewModel.generateQRCode(state.value.formattedMail, coroutineScope)
+
+
+                        "URL" ->  viewModel.generateQRCode(state.value.formattedUrl, coroutineScope)
+
+
+                        "Geo" ->  viewModel.generateQRCode(state.value.formattedGeo, coroutineScope)
+                        "Event" ->    viewModel.generateQRCode(state.value.formattedEvent, coroutineScope)
+
+                    }
 
                 } else {
                     Toast.makeText(
