@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -24,7 +26,18 @@ fun ValidatedTextField(
             value = value,
             onValueChange = onValueChange,
             label = { Text(label) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.colors (
+                focusedContainerColor = MaterialTheme.colorScheme.tertiary, // Only customize this
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface, // Optional
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,  // Optional
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant ,// Optional
+                cursorColor =  MaterialTheme.colorScheme.primary,
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Gray,
+                errorLabelColor = Color.Red,
+
+                )
         )
         Spacer(modifier = Modifier.height(6.dp))
         if (shouldShowError) {

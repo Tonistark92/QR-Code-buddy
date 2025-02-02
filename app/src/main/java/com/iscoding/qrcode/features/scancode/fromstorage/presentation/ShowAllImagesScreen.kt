@@ -59,30 +59,30 @@ fun ShowAllImagesScreen(navController: NavController) {
         photosShared = viewModel.photosStateShared.value
         Log.d("TAGEff", photosShared.toString())
     }
-Box(modifier = Modifier.padding(16.dp).fillMaxSize(), contentAlignment = Alignment.Center){
-    if (viewModel.photosStateShared.value.isEmpty()){
-        CircularProgressIndicator(
-            modifier = Modifier.width(64.dp),
-            color = Color(0xFF138173),
-            trackColor = Color(0xFF8AE5D0),
+    Box(modifier = Modifier.padding(16.dp).fillMaxSize(), contentAlignment = Alignment.Center){
+        if (viewModel.photosStateShared.value.isEmpty()){
+            CircularProgressIndicator(
+                modifier = Modifier.width(64.dp),
+                color = Color(0xFF138173),
+                trackColor = Color(0xFF8AE5D0),
 
-        )
-    }
-    if (photosShared.isNotEmpty()) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            items(photosShared) { photo ->
-                PhotoItem(photo = photo) { selectedUri ->
-                    // Handle click on the image here
-                    Log.d("ClickedImage", "Clicked on image: $selectedUri")
-                    analyzeImage(context.contentResolver,context, selectedUri, navController)
+                )
+        }
+        if (photosShared.isNotEmpty()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                items(photosShared) { photo ->
+                    PhotoItem(photo = photo) { selectedUri ->
+                        // Handle click on the image here
+                        Log.d("ClickedImage", "Clicked on image: $selectedUri")
+                        analyzeImage(context.contentResolver,context, selectedUri, navController)
+                    }
                 }
             }
         }
     }
-}
 }
 
 @Composable
@@ -129,9 +129,9 @@ private fun analyzeImage(
             inputStream?.use {
                 StorageImageAnalyzer (
                     onNoQRCodeFound = {
-                    Toast.makeText(context, "There is no QR Code in this image ", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "There is no QR Code in this image ", Toast.LENGTH_LONG).show()
 
-                } ){ qrCodeData ->
+                    } ){ qrCodeData ->
                     // Handle QR code data here, e.g., show a dialog, navigate to a new screen
                     Log.d("ShowAllImagesScreen", "Scanned QR Code: $qrCodeData")
                     // Example: Show a Toast

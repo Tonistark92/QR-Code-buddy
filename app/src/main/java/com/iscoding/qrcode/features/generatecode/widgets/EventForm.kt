@@ -17,18 +17,21 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun EventInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope, updateState: (GenerateQRCodeState) -> Unit) {
+fun EventInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope, updateStateSub: (String) -> Unit
+, updateStateDTStart: (String) -> Unit,  updateStateDTEnd: (String) -> Unit, updateStateLocation: (String) -> Unit
+) {
+
     ValidatedTextField(
         value = state.eventSubject,
         onValueChange = { newText ->
             state.shouldShowErrorEventSubject = false
 //            state.eventSubject = newText
-            coroutineScope.launch(Dispatchers.IO) {
-                delay(3000)
-                state.shouldShowErrorEventSubject = newText.isNotEmpty() && newText.length < 4
-                updateState(state.copy(eventSubject = newText))
+//            coroutineScope.launch(Dispatchers.IO) {
+//                delay(3000)
+//                state.shouldShowErrorEventSubject = newText.isNotEmpty() && newText.length < 4
+                updateStateSub(newText)
 
-            }
+//            }
         },
         label = "e.g., Meeting",
         shouldShowError = state.shouldShowErrorEventSubject,
@@ -46,12 +49,12 @@ fun EventInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope, updat
             state.shouldShowErrorEventDTStart = false
 
             state.eventDTStart = newText
-            coroutineScope.launch(Dispatchers.Default) {
-                delay(3000)
-                state.shouldShowErrorEventDTStart = !Regex("^\\d{8}T\\d{6}$").matches(newText)
-                updateState(state.copy(eventDTStart = newText))
+//            coroutineScope.launch(Dispatchers.Default) {
+//                delay(3000)
+//                state.shouldShowErrorEventDTStart = !Regex("^\\d{8}T\\d{6}$").matches(newText)
+                updateStateDTStart(newText)
 
-            }
+//            }
         },
         label = "Type The Event Start Time And Date",
 
@@ -70,12 +73,12 @@ fun EventInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope, updat
         onValueChange = { newText ->
             state.shouldShowErrorEventDTEnd = false
             state.eventDTEnd = newText
-            coroutineScope.launch(Dispatchers.Default) {
-                delay(3000)
-                state.shouldShowErrorEventDTEnd = !Regex("^\\d{8}T\\d{6}$").matches(newText)
-                updateState(state.copy(eventDTEnd = newText))
+//            coroutineScope.launch(Dispatchers.Default) {
+//                delay(3000)
+//                state.shouldShowErrorEventDTEnd = !Regex("^\\d{8}T\\d{6}$").matches(newText)
+                updateStateDTEnd(newText)
 
-            }
+//            }
         },
         label = "Type The Event End Time And Date",
         shouldShowError = state.shouldShowErrorEventDTEnd,
@@ -93,12 +96,12 @@ fun EventInput(state: GenerateQRCodeState, coroutineScope: CoroutineScope, updat
         onValueChange = { newText ->
             state.shouldShowErrorEventLocation = false
             state.eventLocation = newText
-            coroutineScope.launch(Dispatchers.Default) {
-                delay(3000)
-                state.shouldShowErrorEventLocation = newText.isEmpty() || newText.length <= 4
-                updateState(state.copy(eventLocation = newText))
+//            coroutineScope.launch(Dispatchers.Default) {
+//                delay(3000)
+//                state.shouldShowErrorEventLocation = newText.isEmpty() || newText.length <= 4
+                updateStateLocation(newText)
 
-            }
+//            }
         },
         label = "Type The Location for The Event",
         shouldShowError = state.shouldShowErrorEventLocation,

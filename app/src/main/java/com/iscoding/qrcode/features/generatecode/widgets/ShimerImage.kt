@@ -21,8 +21,10 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ShimmerImage(
     isLoading: Boolean,
-    contentAfterLoading: @Composable () -> Unit,
-    modifier: Modifier = Modifier
+
+
+    modifier: Modifier = Modifier,
+            contentAfterLoading: @Composable () -> Unit,
 ) {
     if(isLoading) {
         Row(modifier = modifier) {

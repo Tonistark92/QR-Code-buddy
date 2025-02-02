@@ -33,47 +33,12 @@ import com.iscoding.qrcode.util.LocaleHelper
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
-    override fun attachBaseContext(newBase: Context?) {
-        super.attachBaseContext(newBase?.let { LocaleHelper.updateLocale(it) })
-    }
-    fun changeLanguage(languageTag: String, context: Context) {
-        val newLocale = Locale.forLanguageTag(languageTag)
-        LocaleHelper.setLocale(context, newLocale)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.getSystemService(LocaleManager::class.java)
-                .applicationLocales = android.os.LocaleList.forLanguageTags(languageTag)
-        } else {
-            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(languageTag))
-        }
-
-    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-//            var locale by remember { mutableStateOf(Locale.getDefault()) }
-//            var layoutDirection by remember { mutableStateOf(ResolvedTextDirection.Ltr) }
-//            var configuration = Configuration()
-//            configuration = resources.configuration.apply {
-//                setLocale(resources.configuration.locales[0])
-//            }
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//                changeLanguage("en", this@MainActivity)
-//
-//            } else {
-//                changeLanguage("en", this@MainActivity)
-//                (context as? Activity)?.recreate()
-//            }
             val context = this
             val permisions = arrayOf(
 
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_NETWORK_STATE,
-                Manifest.permission.INTERNET,
-                Manifest.permission.CHANGE_NETWORK_STATE,
-                Manifest.permission.ACCESS_WIFI_STATE,
-                Manifest.permission.CHANGE_WIFI_STATE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.CAMERA

@@ -1,5 +1,6 @@
 package com.iscoding.qrcode.features.generatecode
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
@@ -13,6 +14,7 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -29,9 +31,9 @@ class GenerateQRCodeViewModel() : ViewModel() {
 
 
     fun updateState(newState: GenerateQRCodeState) {
-        Log.d("DATA", newState.url + "View model")
+//        Log.d("DATA", newState.url + "View model")
         _state.value = newState
-        Log.d("DATA", state.value.toString() + "View model")
+//        Log.d("DATA", state.value.toString() + "View model")
 
     }
 
@@ -111,7 +113,10 @@ class GenerateQRCodeViewModel() : ViewModel() {
                     } else if (_state.value.eventLocation.isEmpty()) {
                         _state.value = _state.value.copy(shouldShowErrorEventLocation = true)
                         false
-                    } else if (_state.value.eventDTStart.isNotEmpty() && dateTimePattern.matches(_state.value.eventDTStart)) {
+                    } else if (_state.value.eventDTStart.isNotEmpty() && dateTimePattern.matches(
+                            _state.value.eventDTStart
+                        )
+                    ) {
                         _state.value = _state.value.copy(shouldShowErrorEventDTEnd = true)
                         false
 
@@ -158,7 +163,7 @@ class GenerateQRCodeViewModel() : ViewModel() {
             }
 
             "Text" -> {
-                if (_state.value.plainText .isNotEmpty()) {
+                if (_state.value.plainText.isNotEmpty()) {
                     _state.value = _state.value.copy(shouldShowErrorPlainText = false)
                     true
                 } else {
@@ -192,7 +197,7 @@ class GenerateQRCodeViewModel() : ViewModel() {
         return uri
     }
 
-    fun formatData(type: String, state: GenerateQRCodeState) : Boolean{
+    fun formatData(type: String, state: GenerateQRCodeState): Boolean {
         var isFormattedAndReady = false
         when (type) {
             "URL" -> {
@@ -200,7 +205,7 @@ class GenerateQRCodeViewModel() : ViewModel() {
                 if (isUrlReady) {
 //                 viewModel.updateState(state.copy(url = state.url))
                     updateState(_state.value.copy(formattedUrl = _state.value.url))
-                    isFormattedAndReady= true
+                    isFormattedAndReady = true
                 }
             }
 
@@ -210,11 +215,11 @@ class GenerateQRCodeViewModel() : ViewModel() {
                 if (isEmailReady) {
                     if (_state.value.mail.startsWith("mailto:")) {
                         updateState(_state.value.copy(mail = _state.value.mail))
-                        isFormattedAndReady= true
+                        isFormattedAndReady = true
 
                     } else {
                         updateState(_state.value.copy(formattedMail = "mailto:${_state.value.mail}"))
-                        isFormattedAndReady= true
+                        isFormattedAndReady = true
 
 
                     }
@@ -222,16 +227,16 @@ class GenerateQRCodeViewModel() : ViewModel() {
             }
 
             "Tel" -> {
-                val isPhoneReady =validateInput("Tel", _state.value)
+                val isPhoneReady = validateInput("Tel", _state.value)
                 if (isPhoneReady) {
                     if (_state.value.tel.startsWith("tel:")) {
                         updateState(_state.value.copy(formattedTel = _state.value.tel))
-                        isFormattedAndReady= true
+                        isFormattedAndReady = true
 
 
                     } else {
                         updateState(_state.value.copy(formattedTel = "tel:${_state.value.tel}"))
-                        isFormattedAndReady= true
+                        isFormattedAndReady = true
 
                     }
                 }
@@ -249,11 +254,11 @@ class GenerateQRCodeViewModel() : ViewModel() {
                      """.trimMargin()
 
                         updateState(state.copy(formattedSMS = formatedSMS))
-                        isFormattedAndReady= true
+                        isFormattedAndReady = true
 
 
                     } else {
-                        updateState(_state.value.copy(smsData = "sms:${_state.value.smsData}"))
+                        updateState(_state.value.copy(smsData = _state.value.smsData))
                         updateState(_state.value.copy(smsNumber = _state.value.smsNumber))
                         val formatedSMS = """
                          sms:
@@ -262,7 +267,7 @@ class GenerateQRCodeViewModel() : ViewModel() {
                      """.trimMargin()
 
                         updateState(_state.value.copy(formattedSMS = formatedSMS))
-                        isFormattedAndReady= true
+                        isFormattedAndReady = true
 
                     }
                 }
@@ -270,7 +275,7 @@ class GenerateQRCodeViewModel() : ViewModel() {
 
             "Geo" -> {
                 val isGeoReady = validateInput("Geo", _state.value)
-                if(isGeoReady) {
+                if (isGeoReady) {
                     if (_state.value.formattedGeo.startsWith("geo:")) {
                         val formatedGeo = """
                          lat: ${_state.value.geoLatitude}
@@ -278,7 +283,7 @@ class GenerateQRCodeViewModel() : ViewModel() {
                      """.trimMargin()
 
                         updateState(_state.value.copy(formattedGeo = formatedGeo))
-                        isFormattedAndReady= true
+                        isFormattedAndReady = true
 
                     } else {
                         val formatedGeo = """
@@ -288,14 +293,14 @@ class GenerateQRCodeViewModel() : ViewModel() {
                      """.trimMargin()
 
                         updateState(_state.value.copy(formattedGeo = formatedGeo))
-                        isFormattedAndReady= true
+                        isFormattedAndReady = true
 
                     }
                 }
             }
 
             "Event" -> {
-                val isSummaryReady =  validateInput("Event", state)
+                val isSummaryReady = validateInput("Event", state)
 
                 val formattedEvent = """
             BEGIN:EVENT
@@ -306,23 +311,23 @@ class GenerateQRCodeViewModel() : ViewModel() {
             END:EVENT
             """.trimIndent()
                 updateState(state.copy(formattedEvent = formattedEvent))
-                isFormattedAndReady= true
+                isFormattedAndReady = true
 
             }
 
             "Text" -> {
                 val isTextReady = validateInput("Text", state)
-                if (isTextReady){
+                if (isTextReady) {
 
                     updateState(_state.value.copy(formattedText = state.plainText))
-                    isFormattedAndReady= true
+                    isFormattedAndReady = true
 
                 }
 
             }
 
             else -> {
-                isFormattedAndReady= false
+                isFormattedAndReady = false
 
             }
 
@@ -330,17 +335,24 @@ class GenerateQRCodeViewModel() : ViewModel() {
         return isFormattedAndReady
     }
 
-    fun generateQRCode(data: String, coroutineScope: CoroutineScope, width: Int = 512, height: Int = 512) {
+    @SuppressLint("SuspiciousIndentation")
+    fun generateQRCode(
+        data: String,
+        coroutineScope: CoroutineScope,
+        width: Int = 512,
+        height: Int = 512
+    ) {
 
-        Log.d("LOADING", "In the Generation")
+//        Log.d("LOADING", "In the Generation")
         Log.d("DATA", data + "IN GENRATION")
+        Log.d("DATA", data + "IN GENRATION" + "${_state.value.formattedText}")
 
         try {
-            Log.d("LOADING", "In the Generation  in try" )
+//            Log.d("LOADING", "In the Generation  in try" )
 
-            _state.value =_state.value.copy(
+            _state.value = _state.value.copy(
 //                 qrBitmap = bmp,
-                isLoading =true
+                isLoading = true
             )
             val writer = QRCodeWriter()
             val hints = Hashtable<EncodeHintType, Any>()
@@ -350,35 +362,38 @@ class GenerateQRCodeViewModel() : ViewModel() {
             val height = bitMatrix.height
             val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
             coroutineScope.launch(Dispatchers.Default) {
-            for (x in 0 until width) {
-                for (y in 0 until height) {
-                    bmp.setPixel(
-                        x,
-                        y,
-                        if (bitMatrix[x, y]) Color.Black.toArgb() else Color.White.toArgb()
-                    )
+                delay(1000)
+                for (x in 0 until width) {
+                    for (y in 0 until height) {
+                        bmp.setPixel(
+                            x,
+                            y,
+                            if (bitMatrix[x, y]) Color.Black.toArgb() else Color.White.toArgb()
+                        )
+                    }
                 }
-            }
-            _state.value =_state.value.copy(
-                qrBitmap = bmp,
-                isLoading =false
-            )
-                Log.d("DATA", _state.value.qrBitmap.toString()+" ٌٌٌُIMAAGE IN GENRATION")
 
+
+
+                _state.value = _state.value.copy(
+                    qrBitmap = bmp,
+                    isLoading = false
+                )
+//                Log.d("DATA", _state.value.qrBitmap.toString() + " ٌٌٌُIMAAGE IN GENRATION")
 
 
 //                _state.value.isLoading =false
-            Log.d("LOADING", "IS Loading in viewmodel"+"${state.value.isLoading}")
-            Log.d("LOADING", "the image      "+"   ${state.value.qrBitmap?.generationId}")
+//            Log.d("LOADING", "IS Loading in viewmodel"+"${state.value.isLoading}")
+//                Log.d("DATA", "the image      " + "   ${state.value.qrBitmap?.generationId}")
 
 //                bmp
             }
 
 
-
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.d("DATA", " ٌٌٌُERRRRORRRRR  IN GENRATION")
+            Log.d("DATA", " ٌٌٌُERRRRORRRRR  IN GENRATION" + e.message)
+            Log.d("DATA", " ٌٌٌُERRRRORRRRR  IN GENRATION" + e.printStackTrace())
 
             null
             //todo show error

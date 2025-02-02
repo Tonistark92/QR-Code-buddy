@@ -44,6 +44,7 @@ import com.iscoding.qrcode.features.generatecode.widgets.SmsInput
 import com.iscoding.qrcode.features.generatecode.widgets.TelInput
 import com.iscoding.qrcode.features.generatecode.widgets.TextInput
 import com.iscoding.qrcode.features.generatecode.widgets.URLInput
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -60,7 +61,10 @@ fun GenerateQRCodeScreen() {
     val shareImageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
     val context = LocalContext.current
-    val dataTypesList = listOf("URL", "Mail", "Tel", "SMS", "Geo", "Event", "Text")
+    val dataTypesList = listOf("Text","URL", "Mail", "Tel", "SMS"
+//        , "Geo", "Event"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -152,7 +156,7 @@ fun GenerateQRCodeScreen() {
         Spacer(modifier = Modifier.height(26.dp))
 
         fun updateState(newState: GenerateQRCodeState) {
-                viewModel.updateState(newState)
+            viewModel.updateState(newState)
         }
 
 
@@ -200,19 +204,65 @@ fun GenerateQRCodeScreen() {
 
 
             "URL" -> URLInput(state.value) { url, showError ->
-                Log.d("DATA",url + "+++++++++++11111111111")
+                Log.d("DATA", url + "+++++++++++11111111111")
                 updateState(
-                    state.value.copy (
+                    state.value.copy(
                         url = url,
                         shouldShowErrorUrl = showError
                     )
                 )
-                Log.d("DATA",state.value.url + "++++++++++++22222222222")
+                Log.d("DATA", state.value.url + "++++++++++++22222222222")
 
             }
 
-            "Geo" -> GeoInput(state.value, coroutineScope, ::updateState)
-            "Event" -> EventInput(state.value, coroutineScope, ::updateState)
+            "Geo" -> {
+                GeoInput(state.value, coroutineScope, updateStateLat = { Latitiute ->
+                    updateState(
+                        state.value.copy(
+                            geoLatitude = Latitiute
+                        )
+                    )
+
+                },
+                    updateStateLong = { long ->
+                        updateState(
+                            state.value.copy(
+                                geoLongitude = long
+                            )
+                        )
+                    })
+            }
+
+            "Event" -> EventInput(state.value, coroutineScope, updateStateSub = { sub ->
+                updateState(
+                    state.value.copy(
+                        eventSubject = sub
+                    )
+                )
+            },
+                updateStateDTStart = { startTimeDate ->
+                    updateState(
+                        state.value.copy(
+                            eventDTStart = startTimeDate
+                        )
+                    )
+                }, updateStateDTEnd = { endTimeDate ->
+                    updateState(
+                        state.value.copy(
+                            eventDTEnd = endTimeDate
+                        )
+                    )
+
+                },
+                updateStateLocation = { location ->
+
+                    updateState(
+                        state.value.copy(
+                            eventLocation = location
+                        )
+                    )
+                }
+            )
         }
         // for share
         Button(
@@ -243,27 +293,101 @@ fun GenerateQRCodeScreen() {
         // for generate
         Button(
             onClick = {
-                Toast.makeText(context, "Dost", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(context, "Dost", Toast.LENGTH_SHORT).show()
                 val isRightData = viewModel.formatData(state.value.pickedType, state.value)
                 if (isRightData) {
                     state.value.isLoading = true
                     Log.d("LOADING", "IS Loading in screen    " + "${state.value.isLoading}")
                     when (state.value.pickedType) {
-                        "Text" ->  viewModel.generateQRCode(state.value.formattedText, coroutineScope)
+                        "Text" -> {
+                            coroutineScope.launch {
 
-                        "Tel" -> viewModel.generateQRCode(state.value.formattedTel, coroutineScope)
+                                viewModel.generateQRCode(state.value.formattedText, coroutineScope)
+                                delay(1000)
+                                viewModel.generateQRCode(state.value.formattedText, coroutineScope)
+                            }
+                        }
 
-                        "SMS" ->  viewModel.generateQRCode(state.value.formattedSMS, coroutineScope)
-
-                        "Mail" -> viewModel.generateQRCode(state.value.formattedMail, coroutineScope)
-
-
-                        "URL" ->  viewModel.generateQRCode(state.value.formattedUrl, coroutineScope)
+                        "Tel" -> {
+                            coroutineScope.launch {
 
 
-                        "Geo" ->  viewModel.generateQRCode(state.value.formattedGeo, coroutineScope)
-                        "Event" ->    viewModel.generateQRCode(state.value.formattedEvent, coroutineScope)
+                                viewModel.generateQRCode(state.value.formattedTel, coroutineScope)
+                                delay(1000)
 
+                                viewModel.generateQRCode(state.value.formattedTel, coroutineScope)
+                            }
+                        }
+
+                        "SMS" -> {
+                            coroutineScope.launch {
+
+
+                                viewModel.generateQRCode(state.value.formattedSMS, coroutineScope)
+                                delay(1000)
+
+                                viewModel.generateQRCode(state.value.formattedSMS, coroutineScope)
+                            }
+                        }
+
+                        "Mail" -> {
+                            coroutineScope.launch {
+
+                                viewModel.generateQRCode(
+
+                                    state.value.formattedMail,
+                                    coroutineScope
+                                )
+                                delay(1000)
+
+                                viewModel.generateQRCode(
+
+                                    state.value.formattedMail,
+                                    coroutineScope
+                                )
+                            }
+                        }
+
+
+                        "URL" -> {
+                            coroutineScope.launch {
+
+
+                                viewModel.generateQRCode(state.value.formattedUrl, coroutineScope)
+                                delay(1000)
+
+                                viewModel.generateQRCode(state.value.formattedUrl, coroutineScope)
+
+                            }
+                        }
+
+
+                        "Geo" -> {
+                            coroutineScope.launch {
+
+
+                                viewModel.generateQRCode(state.value.formattedGeo, coroutineScope)
+                                delay(1000)
+
+                                viewModel.generateQRCode(state.value.formattedGeo, coroutineScope)
+                            }
+                        }
+
+                        "Event" -> {
+                            coroutineScope.launch {
+
+                                viewModel.generateQRCode(
+                                    state.value.formattedEvent,
+                                    coroutineScope
+                                )
+                                delay(1000)
+
+                                viewModel.generateQRCode(
+                                    state.value.formattedEvent,
+                                    coroutineScope
+                                )
+                            }
+                        }
                     }
 
                 } else {
