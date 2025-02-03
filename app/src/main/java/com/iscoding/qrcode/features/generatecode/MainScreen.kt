@@ -27,6 +27,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +38,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
@@ -89,10 +93,24 @@ fun MainScreen(navController: NavController) {
 
 
 
-        Button(onClick = { navController.navigate(Screens.AskFromCameraOrStorageScreen) }) {
+        Button(onClick = { navController.navigate(Screens.AskFromCameraOrStorageScreen) },
+            shape = RectangleShape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary, // Background color
+                contentColor = Color.White, // Text/Icon color
+                disabledContainerColor = Color.Gray, // Disabled background
+                disabledContentColor = Color.Black // Disabled text color
+            )) {
             Text(text = "To Scan QR Code")
         }
-        Button(onClick = { navController.navigate(Screens.GenerateCode) }) {
+        Button(onClick = { navController.navigate(Screens.GenerateCode) },
+            shape = RectangleShape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary, // Background color
+                contentColor = Color.White, // Text/Icon color
+                disabledContainerColor = Color.Gray, // Disabled background
+                disabledContentColor = Color.Black // Disabled text color
+            )) {
             Text(text = "To Generate QR Code")
         }
     }

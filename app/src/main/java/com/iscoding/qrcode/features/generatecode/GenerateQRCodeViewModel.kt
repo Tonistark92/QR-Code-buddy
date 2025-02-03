@@ -248,10 +248,7 @@ class GenerateQRCodeViewModel() : ViewModel() {
                     if (_state.value.formattedSMS.startsWith("sms:")) {
                         updateState(_state.value.copy(smsData = _state.value.smsData))
                         updateState(_state.value.copy(smsNumber = _state.value.smsNumber))
-                        val formatedSMS = """
-                         Tel: ${_state.value.smsNumber}
-                         data: ${_state.value.smsData}
-                     """.trimMargin()
+                        val formatedSMS = "\n Tel: ${_state.value.smsNumber} \n data: ${_state.value.smsData}".trimMargin()
 
                         updateState(state.copy(formattedSMS = formatedSMS))
                         isFormattedAndReady = true
@@ -260,11 +257,7 @@ class GenerateQRCodeViewModel() : ViewModel() {
                     } else {
                         updateState(_state.value.copy(smsData = _state.value.smsData))
                         updateState(_state.value.copy(smsNumber = _state.value.smsNumber))
-                        val formatedSMS = """
-                         sms:
-                         Tel: ${_state.value.smsNumber}
-                         data: ${_state.value.smsData}
-                     """.trimMargin()
+                        val formatedSMS = " \n sms: \n Tel: ${_state.value.smsNumber} \n data: ${_state.value.smsData}".trimMargin()
 
                         updateState(_state.value.copy(formattedSMS = formatedSMS))
                         isFormattedAndReady = true
@@ -344,8 +337,8 @@ class GenerateQRCodeViewModel() : ViewModel() {
     ) {
 
 //        Log.d("LOADING", "In the Generation")
-        Log.d("DATA", data + "IN GENRATION")
-        Log.d("DATA", data + "IN GENRATION" + "${_state.value.formattedText}")
+//        Log.d("DATA", data + "IN GENRATION")
+//        Log.d("DATA", data + "IN GENRATION" + "${_state.value.formattedText}")
 
         try {
 //            Log.d("LOADING", "In the Generation  in try" )
@@ -392,8 +385,8 @@ class GenerateQRCodeViewModel() : ViewModel() {
 
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.d("DATA", " ٌٌٌُERRRRORRRRR  IN GENRATION" + e.message)
-            Log.d("DATA", " ٌٌٌُERRRRORRRRR  IN GENRATION" + e.printStackTrace())
+//            Log.d("DATA", " ٌٌٌُERRRRORRRRR  IN GENRATION" + e.message)
+//            Log.d("DATA", " ٌٌٌُERRRRORRRRR  IN GENRATION" + e.printStackTrace())
 
             null
             //todo show error

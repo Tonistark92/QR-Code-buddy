@@ -4,10 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.navigation.NavController
 import com.iscoding.qrcode.graph.Screens
 
@@ -18,10 +22,28 @@ fun AskFromCameraOrStorageScreen(navController: NavController) {
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier.fillMaxSize()
     ) {
-        Button(onClick = {navController.navigate(Screens.ShowAllImagesScreen)} ) {
+        Button(onClick = { navController.navigate(Screens.ShowAllImagesScreen) },
+            shape = RectangleShape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary, // Background color
+                contentColor = Color.White, // Text/Icon color
+                disabledContainerColor = Color.Gray, // Disabled background
+                disabledContentColor = Color.Black // Disabled text color
+            )) {
             Text(text = "QR From Storage")
         }
-        Button(onClick = {navController.navigate(Screens.ScanCode)}) {
+        Button(
+            onClick = {
+                navController.navigate(Screens.ScanCode)
+            },
+            shape = RectangleShape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary, // Background color
+                contentColor = Color.White, // Text/Icon color
+                disabledContainerColor = Color.Gray, // Disabled background
+                disabledContentColor = Color.Black // Disabled text color
+            )
+        ) {
             Text(text = "QR From Camera")
         }
     }
