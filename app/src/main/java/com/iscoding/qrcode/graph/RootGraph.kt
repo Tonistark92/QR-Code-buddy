@@ -1,6 +1,12 @@
 package com.iscoding.qrcode.graph
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -23,25 +29,43 @@ fun RootNavigationGraph(navController: NavHostController) {
         startDestination = Screens.MainScreen
     ) {
         composable(route = Screens.MainScreen) {
-           MainScreen(navController = navController)
+            AnimatedScreenTransition {
+
+                MainScreen(navController = navController)
+            }
 
         }
         composable(route = Screens.ScanCode) {
-            ScanCodeScreen()
+            AnimatedScreenTransition {
 
+                ScanCodeScreen()
+            }
         }
         composable(route = Screens.GenerateCode) {
-            GenerateQRCodeScreen()
+            AnimatedScreenTransition {
+
+                GenerateQRCodeScreen()
+            }
         }
         composable(route = Screens.ShowAllImagesScreen) {
-           ShowAllImagesScreen(navController = navController)
+            AnimatedScreenTransition {
+
+
+            ShowAllImagesScreen(navController = navController)
+            }
         }
         composable(route = Screens.GenerateCode) {
-            GenerateQRCodeScreen()
-        }
+            AnimatedScreenTransition {
+
+                GenerateQRCodeScreen()
+            }
+            }
         composable(route = Screens.AskFromCameraOrStorageScreen) {
-           AskFromCameraOrStorageScreen(navController = navController)
-        }
+            AnimatedScreenTransition {
+
+                AskFromCameraOrStorageScreen(navController = navController)
+            }
+            }
 
         composable(
             //      /ShowQrCodeDataScreen
@@ -50,11 +74,33 @@ fun RootNavigationGraph(navController: NavHostController) {
                 navArgument("qrCodeData") { type = NavType.StringType },
                 navArgument("imageUri") { type = NavType.StringType }
             ),
-            deepLinks = listOf(navDeepLink { uriPattern = "qrcodebuddy://${Screens.ShowQRCodeDataScreenDeepLink}/{qrCodeData}/{imageUri}" })
+            deepLinks = listOf(navDeepLink {
+                uriPattern =
+                    "qrcodebuddy://${Screens.ShowQRCodeDataScreenDeepLink}/{qrCodeData}/{imageUri}"
+            })
         ) { backStackEntry ->
             val qrCodeData = backStackEntry.arguments?.getString("qrCodeData")
             val imageUri = backStackEntry.arguments?.getString("imageUri")
+            AnimatedScreenTransition{
+
             ShowQRCodeImageData(qrCodeData = qrCodeData!!, imageUri = imageUri!!)
+            }
+
+
         }
+    }
+}
+
+@Composable
+fun AnimatedScreenTransition(
+//    isVisible: Boolean,
+    content: @Composable () -> Unit
+) {
+    AnimatedVisibility(
+        visible = true,
+        enter = fadeIn(animationSpec = tween(500)) + slideInHorizontally(initialOffsetX = { it }),
+        exit = fadeOut(animationSpec = tween(500)) + slideOutHorizontally(targetOffsetX = { -it })
+    ) {
+        content()
     }
 }

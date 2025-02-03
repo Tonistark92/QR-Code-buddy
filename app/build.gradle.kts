@@ -75,6 +75,7 @@ dependencies {
 
 //
     implementation (libs.androidx.animation)
+    implementation (libs.accompanist.navigation.animation)
     implementation (libs.androidx.foundation)
 
 
@@ -82,20 +83,20 @@ dependencies {
 //    implementation ("androidx.activity:activity-compose:1.9.0")
 // for scan
     // CameraX
-    implementation ("androidx.camera:camera-camera2:1.3.3")
-    implementation ("androidx.camera:camera-lifecycle:1.3.3")
-    implementation ("androidx.camera:camera-view:1.3.3")
+    implementation (libs.androidx.camera.camera2)
+    implementation (libs.androidx.camera.lifecycle)
+    implementation (libs.androidx.camera.view)
 
     // Zxing
-    implementation ("com.google.zxing:core:3.3.3")
+    implementation (libs.core.v333)
 
     //for generate
-    implementation ("com.google.zxing:core:3.3.3")
-    implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation (libs.zxing.core)
+    implementation (libs.zxing.android.embedded)
 
 
-    implementation("com.google.accompanist:accompanist-permissions:0.31.1-alpha")
-    implementation("io.coil-kt:coil-compose:1.4.0")
+    implementation(libs.accompanist.permissions)
+    implementation(libs.coil.compose)
 
 //    // Room
 //    implementation("androidx.room:room-runtime:2.6.1")
@@ -105,12 +106,14 @@ dependencies {
 //    kapt( "androidx.room:room-compiler:2.6.1")
 
     // koin
-    implementation ("io.insert-koin:koin-android:3.5.3")
-    implementation ("io.insert-koin:koin-androidx-navigation:3.2.0-beta-1")
-    implementation ("io.insert-koin:koin-androidx-compose:3.5.3")
+    implementation (libs.koin.android)
+    implementation (libs.koin.androidx.navigation)
+    implementation (libs.koin.androidx.compose)
 
     //life cycle
-//    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.8.2")
+    implementation (libs.lifecycle.runtime.ktx.v282)
+    //splash
+    implementation(libs.androidx.core.splashscreen)
 }
 kapt {
     correctErrorTypes = true

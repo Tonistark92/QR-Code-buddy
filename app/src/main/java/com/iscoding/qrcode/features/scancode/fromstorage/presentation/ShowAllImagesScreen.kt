@@ -9,6 +9,7 @@ import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -59,18 +60,19 @@ fun ShowAllImagesScreen(navController: NavController) {
         photosShared = viewModel.photosStateShared.value
         Log.d("TAGEff", photosShared.toString())
     }
-    Box(modifier = Modifier.padding(16.dp).fillMaxSize(), contentAlignment = Alignment.Center){
+    Box(modifier = Modifier.padding(16.dp).fillMaxSize().background(MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center){
         if (viewModel.photosStateShared.value.isEmpty()){
             CircularProgressIndicator(
                 modifier = Modifier.width(64.dp),
                 color = Color(0xFF138173),
+
                 trackColor = Color(0xFF8AE5D0),
 
                 )
         }
         if (photosShared.isNotEmpty()) {
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 items(photosShared) { photo ->
@@ -91,7 +93,7 @@ private fun PhotoItem(
     onItemClick: (Uri) -> Unit
 ) {
     Box(
-        modifier = Modifier
+        modifier = Modifier.background(MaterialTheme.colorScheme.background)
             .padding(8.dp)
             .clickable { onItemClick(photo.contentUri) }
     ) {
@@ -102,6 +104,7 @@ private fun PhotoItem(
             contentScale = ContentScale.Crop
         )
     }
+    Spacer(modifier = Modifier.height(12.dp))
 }
 
 
@@ -137,7 +140,7 @@ private fun analyzeImage(
                     // Example: Show a Toast
                     val encodedQrCodeData = Uri.encode(qrCodeData)
                     val encodedImageUri = Uri.encode(uri.toString())
-                    Toast.makeText(context, "QR Code Data: $qrCodeData", Toast.LENGTH_LONG).show()
+//                    Toast.makeText(context, "QR Code Data: $qrCodeData", Toast.LENGTH_LONG).show()
                     navController.navigate("${Screens.ShowQRCodeDataScreen}/$encodedQrCodeData/$encodedImageUri")
                 }.analyze(uri, it)
             }
