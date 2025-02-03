@@ -19,5 +19,6 @@ This Android application allows users to generate and scan QR codes. The app is 
   - Used `ImageAnalysis.Analyzer` for analyzing the camera frames in real-time to detect QR codes.
 
 ## Screenshots
-![qr1](https://github.com/Tonistark92/QR-Code-Generator-Scanner/assets/86676102/d1e8610f-3df9-4a6c-81e1-f9bf441d9cd1)
-![qr2](https://github.com/Tonistark92/QR-Code-Generator-Scanner/assets/86676102/832695b5-48dc-46fe-8433-afc480a4f6f5)
+![qr1](https://github.com/user-attachments/assets/5b5c0058-6d5f-4f57-b8b0-7ddcd4707eb2)
+![qr2](https://github.com/user-attachments/assets/ddcbf3f9-a117-478e-af83-2b0d4f35f640)
+![qr3](https://github.com/Tonistark92/QR-Code-Generator-Scanner/assets/86676102/832695b5-48dc-46fe-8433-afc480a4f6f5)
