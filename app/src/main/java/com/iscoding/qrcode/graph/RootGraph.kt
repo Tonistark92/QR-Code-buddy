@@ -14,12 +14,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.iscoding.qrcode.features.generatecode.GenerateQRCodeScreen
-import com.iscoding.qrcode.features.generatecode.MainScreen
-import com.iscoding.qrcode.features.scancode.AskFromCameraOrStorageScreen
-import com.iscoding.qrcode.features.scancode.fromcamera.ScanCodeScreen
-import com.iscoding.qrcode.features.scancode.fromstorage.presentation.ShowAllImagesScreen
-import com.iscoding.qrcode.features.scancode.fromstorage.presentation.ShowQRCodeImageData
+import com.iscoding.qrcode.features.generate.GenerateQRCodeScreen
+import com.iscoding.qrcode.features.generate.MainScreen
+import com.iscoding.qrcode.features.scan.AskFromCameraOrStorageScreen
+import com.iscoding.qrcode.features.scan.camera.ScanCodeScreen
+import com.iscoding.qrcode.features.scan.storage.StorageScanScreen
+import com.iscoding.qrcode.features.scan.storage.details.QrDetailScreen
 
 @SuppressLint("NewApi")
 @Composable
@@ -51,7 +51,7 @@ fun RootNavigationGraph(navController: NavHostController) {
             AnimatedScreenTransition {
 
 
-            ShowAllImagesScreen(navController = navController)
+            StorageScanScreen(navController = navController)
             }
         }
         composable(route = Screens.GenerateCode) {
@@ -83,7 +83,7 @@ fun RootNavigationGraph(navController: NavHostController) {
             val imageUri = backStackEntry.arguments?.getString("imageUri")
             AnimatedScreenTransition{
 
-            ShowQRCodeImageData(qrCodeData = qrCodeData!!, imageUri = imageUri!!)
+            QrDetailScreen(qrCodeData = qrCodeData!!, imageUri = imageUri!!)
             }
 
 

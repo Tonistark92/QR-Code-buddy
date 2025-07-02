@@ -15,7 +15,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.iscoding.qrcode.graph.RootNavigationGraph
 import com.iscoding.qrcode.graph.Screens
-import com.iscoding.qrcode.features.scancode.fromstorage.domain.StorageImageAnalyzer
+import com.iscoding.qrcode.features.scan.storage.domain.StorageImageAnalyzer
 import com.iscoding.qrcode.ui.theme.QRCodeTheme
 
 class MainActivity : ComponentActivity() {

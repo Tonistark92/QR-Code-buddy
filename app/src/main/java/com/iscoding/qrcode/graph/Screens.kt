@@ -5,7 +5,7 @@ class Screens {
         val MainScreen = "/"
         val ScanCode = "/scan"
         val GenerateCode= "/generate"
-        val ShowAllImagesScreen= "/ShowAllImagesScreen"
+        val ShowAllImagesScreen= "/StorageScanScreen"
         val ShowQRCodeDataScreenDeepLink= "showqrcodedatascreen"
                                 //showQRCodeDetails
         val ShowQRCodeDataScreen= "/ShowQrCodeDataScreen"
