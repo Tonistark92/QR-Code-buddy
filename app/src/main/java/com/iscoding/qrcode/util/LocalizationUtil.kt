@@ -4,6 +4,8 @@ import android.annotation.TargetApi
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.unit.LayoutDirection
 import java.util.Locale
 
 object LocaleHelper {
@@ -46,4 +48,7 @@ object LocaleHelper {
         resources.updateConfiguration(configuration, resources.displayMetrics)
         return context
     }
+    val LocalAppLocale = compositionLocalOf { Locale.getDefault() }
+    val LocalLayoutDirection = compositionLocalOf { LayoutDirection.Ltr }
+    val LocaleConfig= compositionLocalOf<Configuration> { error("No Config provided") }
 }

@@ -9,4 +9,9 @@
     <string name="qr_type_sms">SMS</string>
     <string name="qr_type_geo">Location</string>
     <string name="qr_type_event">Event</string>
+
+
+
+    <string name="hello">Hello</string>
+
 </resources>

@@ -1,6 +1,7 @@
 package com.iscoding.qrcode
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -17,24 +18,31 @@ import com.iscoding.qrcode.graph.RootNavigationGraph
 import com.iscoding.qrcode.graph.Screens
 import com.iscoding.qrcode.features.scan.storage.domain.StorageImageAnalyzer
 import com.iscoding.qrcode.ui.theme.QRCodeTheme
+import com.iscoding.qrcode.util.LocaleHelper
 
 class MainActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context?) {
+        super.attachBaseContext(newBase?.let { LocaleHelper.updateLocale(it) })
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+
+
         super.onCreate(savedInstanceState)
         installSplashScreen()
         setContent {
             val context = this
-            val permisions = arrayOf(
-
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.CAMERA
-            )
-
-            LaunchedEffect(key1 = true) {
-                ActivityCompat.requestPermissions(context , permisions, 11)
-
-            }
+//            val permisions = arrayOf(
+//
+//                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//                Manifest.permission.READ_EXTERNAL_STORAGE,
+//                Manifest.permission.CAMERA
+//            )
+//
+//            LaunchedEffect(key1 = true) {
+//                ActivityCompat.requestPermissions(context , permisions, 11)
+//
+//            }
             val navController = rememberNavController()
             QRCodeTheme {
                 RootNavigationGraph(navController = navController)

@@ -9,6 +9,7 @@ import com.iscoding.qrcode.data.repos.QrCodeScannerImpl
 import com.iscoding.qrcode.domain.repos.QrCodeGenerator
 import com.iscoding.qrcode.domain.repos.QrCodeScanner
 import com.iscoding.qrcode.features.generate.GenerateQRCodeViewModel
+import com.iscoding.qrcode.features.scan.camera.CameraScanViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -32,7 +33,9 @@ val appModule = module {
     viewModel {
         GenerateQRCodeViewModel( get<QrCodeGenerator>())
     }
-
+    viewModel {
+        CameraScanViewModel( get<QrCodeScanner>())
+    }
 
 
     // Repositories
