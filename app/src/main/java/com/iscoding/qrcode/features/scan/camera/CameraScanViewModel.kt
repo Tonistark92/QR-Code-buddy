@@ -25,18 +25,11 @@ class CameraScanViewModel(
     private val _uiEvent = Channel<CameraScanUiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
-
-
     fun onEvent(event: CameraScanEvent) {
         viewModelScope.launch {
             when (event) {
                 is CameraScanEvent.OnCameraPermissionResult -> {
-                    _state.update { it.copy(hasCamPermission = event.granted) }
-//                    if (!_state.value.hasCamPermission){
-//                    onEvent(CameraScanEvent.OnRequestCameraPermission)
-//                        _state.update { it.copy(shouldPermissionDialog = true) }
-//
-//                    }
+                    handlePermissionResult(event.granted)
                 }
 
                 CameraScanEvent.OnRequestCameraPermission -> {
@@ -44,60 +37,102 @@ class CameraScanViewModel(
                 }
 
                 CameraScanEvent.OnDismissPermissionDialog -> {
-                    _state.update {
-                        it.copy(shouldPermissionDialog = false)
-                    }
+                    _state.update { it.copy(shouldPermissionDialog = false) }
                 }
 
                 CameraScanEvent.OnOpenAppSettings -> {
-                    _uiEvent.send(OpenAppSettings)
+                    _uiEvent.send(CameraScanUiEvent.OpenAppSettings)
                 }
 
-                is CameraScanEvent.OnValidateRegexForUrl -> {
-                    val isValid = isValidUrlWithRegex(_state.value.scannedData)
-                    _state.update { it.copy(isGoodUrlRegex = isValid, scannedUrl = _state.value.scannedData, shouldURLDialog = true) }
-
-
+                CameraScanEvent.OnValidateRegexForUrl -> {
+                    validateScannedUrl()
                 }
 
                 is CameraScanEvent.OnScannedQrCode -> {
-                    _state.update { it.copy(scannedData = event.data) }
-
-                    // If it’s a URL, validate
-//                if (isValidUrlWithRegex(event.data)) {
-//                    onEvent(CameraScanEvent.OnValidateRegexForUrl(event.data))
-//                }
-//                else {
-//                    _uiEvent.trySend(CameraScanUiEvent.ShowToast("Invalid URL"))
-//
-//                }
+                    handleScannedQrCode(event.data)
                 }
 
-
                 CameraScanEvent.OnOpenUrlFromScannedQrCode -> {
-                    if (_state.value.isGoodUrlRegex) {
-                        _uiEvent.send(OpenUrl)
-                        _state.update {
-                            it.copy(shouldURLDialog = false)
-                        }
-                    } else {
-                        _uiEvent.send(ShowToast("Invalid URL"))
-                    }
+                    openScannedUrl()
                 }
 
                 CameraScanEvent.OnDismissUrlDialog -> {
-                    _state.update {
-                        it.copy(shouldURLDialog = false)
-                    }
+                    _state.update { it.copy(shouldURLDialog = false) }
                 }
             }
-
         }
     }
 
-    fun isValidUrlWithRegex(url: String): Boolean {
+    private fun handlePermissionResult(granted: Boolean) {
+        if (granted) {
+            _state.update {
+                it.copy(
+                    hasCamPermission = true,
+                    shouldPermissionDialog = false,
+                    shouldLaunchAppSettings = false
+                )
+            }
+        } else {
+            // Permission denied - we need to check if we should show rationale
+            _state.update {
+                it.copy(
+                    hasCamPermission = false,
+                    shouldPermissionDialog = true,
+                    // This will be set properly in the composable when we know the rationale status
+                    shouldLaunchAppSettings = false
+                )
+            }
+        }
+    }
+
+    private fun handleScannedQrCode(data: String) {
+        _state.update { it.copy(scannedData = data) }
+    }
+
+    private fun validateScannedUrl() {
+        val currentData = _state.value.scannedData
+        val isValidUrl = isValidUrlWithRegex(currentData)
+
+        _state.update {
+            it.copy(
+                isGoodUrlRegex = isValidUrl,
+                scannedUrl = currentData,
+                shouldURLDialog = isValidUrl
+            )
+        }
+
+        if (!isValidUrl) {
+            viewModelScope.launch {
+                _uiEvent.send(CameraScanUiEvent.ShowToast("Scanned QR code is not a valid URL"))
+            }
+        }
+    }
+
+    private fun openScannedUrl() {
+        if (_state.value.isGoodUrlRegex) {
+            viewModelScope.launch {
+                _uiEvent.send(CameraScanUiEvent.OpenUrl)
+            }
+            _state.update { it.copy(shouldURLDialog = false) }
+        } else {
+            viewModelScope.launch {
+                _uiEvent.send(CameraScanUiEvent.ShowToast("Invalid URL"))
+            }
+        }
+    }
+
+    fun checkInitialPermission(hasPermission: Boolean) {
+        _state.update { it.copy(hasCamPermission = hasPermission) }
+    }
+
+    fun setPermissionRationaleStatus(shouldShowRationale: Boolean) {
+        _state.update {
+            it.copy(shouldLaunchAppSettings = !shouldShowRationale && !it.hasCamPermission)
+        }
+    }
+
+    private fun isValidUrlWithRegex(url: String): Boolean {
         val urlPattern = Regex("""https?://(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)""")
         return urlPattern.matches(url)
     }
 }
-

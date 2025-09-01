@@ -21,15 +21,23 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
@@ -42,6 +50,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,70 +69,54 @@ import com.iscoding.qrcode.features.scan.widgets.PermissionDialog
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.koinViewModel
 
-@SuppressLint("ClickableViewAccessibility")
 @Composable
-fun ScanCodeScreen(
-) {
+fun ScanCodeScreen() {
     val viewModel = koinViewModel<CameraScanViewModel>()
-
     val state = viewModel.state.collectAsStateWithLifecycle()
-    val clipboardManager = LocalClipboardManager.current // ClipboardManager instance
-
-
+    val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+
     val cameraProviderFuture = remember {
         ProcessCameraProvider.getInstance(context)
     }
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted ->
-            if (!granted) {
-                if (!shouldShowRequestPermissionRationale(context as Activity, Manifest.permission.CAMERA))
-                state.value.shouldLaunchAppSettings = true
-
-                state.value.shouldPermissionDialog = true
-
+            // Check if we should show rationale BEFORE sending the result
+            val shouldShowRationale = if (!granted) {
+                ActivityCompat.shouldShowRequestPermissionRationale(
+                    context as Activity,
+                    Manifest.permission.CAMERA
+                )
             } else {
-
-                state.value.shouldPermissionDialog = false
-                state.value.shouldLaunchAppSettings = false
+                false
             }
+
+            // Update the rationale status in ViewModel
+            viewModel.setPermissionRationaleStatus(shouldShowRationale)
+
+            // Send permission result
+            viewModel.onEvent(CameraScanEvent.OnCameraPermissionResult(granted))
         }
     )
-    LaunchedEffect(key1 = true) {
-        Log.d("ISLAM", "   inside LaunchedEffect ")
 
-        val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+    LaunchedEffect(Unit) {
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
 
-        Log.d("ISLAM", "${granted}" + "    is granted ? ")
-        Log.d("ISLAM", ActivityCompat.shouldShowRequestPermissionRationale(context as Activity, Manifest.permission.CAMERA).toString())
+        viewModel.checkInitialPermission(hasPermission)
 
-        viewModel.onEvent(CameraScanEvent.OnCameraPermissionResult(granted))
-
-        val hasCamPermission = state.value.hasCamPermission
-        if (!hasCamPermission) {
-            if (shouldShowRequestPermissionRationale(context, Manifest.permission.CAMERA))
-            {
-                Log.d(
-                    "ISLAM",
-                    "${state.value.shouldPermissionDialog}" + "    state.shouldPermissionDialog 1"
-                )
-
-                state.value.shouldPermissionDialog = true
-                Log.d(
-                    "ISLAM",
-                    "${state.value.shouldPermissionDialog}" + "    state.shouldPermissionDialog 22"
-                )
-
-            }
-            Log.d("ISLAM", "    ask for permision 1")
-
-//            launcher.launch(Manifest.permission.CAMERA)
+        if (!hasPermission) {
             viewModel.onEvent(CameraScanEvent.OnRequestCameraPermission)
         }
+    }
 
-        viewModel.uiEvent.collectLatest { event ->
+    LaunchedEffect(key1 = viewModel.uiEvent) {
+        viewModel.uiEvent.collect { event ->
             when (event) {
                 is CameraScanUiEvent.ShowToast -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
@@ -132,19 +125,14 @@ fun ScanCodeScreen(
                 CameraScanUiEvent.OpenUrl -> {
                     val intent = Intent(Intent.ACTION_VIEW, state.value.scannedUrl.toUri())
                     context.startActivity(intent)
-                    state.value.shouldURLDialog = false
+                    viewModel.onEvent(CameraScanEvent.OnDismissUrlDialog)
                 }
 
                 CameraScanUiEvent.RequestCameraPermission -> {
-                    Log.d("ISLAM", "    ask for permision 2")
-
                     launcher.launch(Manifest.permission.CAMERA)
-
                 }
 
                 CameraScanUiEvent.OpenAppSettings -> {
-                    Log.d("ISLAM", "    go to settings ")
-
                     val intent = Intent(
                         Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                         Uri.fromParts("package", context.packageName, null)
@@ -155,50 +143,38 @@ fun ScanCodeScreen(
         }
     }
 
+    // Permission Dialog
     if (state.value.shouldPermissionDialog) {
-        Log.d("ISLAM", "    Show dialog")
-
         PermissionDialog(
-            title = "we Need The camera for this ",
-            body = "Kindly approve that permission so we can assist",
+            title = "Camera Permission Required",
+            body = if (state.value.shouldLaunchAppSettings) {
+                "Camera permission was permanently denied. Please enable it in app settings to scan QR codes."
+            } else {
+                "We need camera access to scan QR codes. Please grant the permission."
+            },
+            confirmButtonText = if (state.value.shouldLaunchAppSettings) "Open Settings" else "Grant Permission",
             onConfirm = {
-                state.value.shouldPermissionDialog = false
-
+                if (state.value.shouldLaunchAppSettings) {
+                    viewModel.onEvent(CameraScanEvent.OnOpenAppSettings)
+                } else {
+                    viewModel.onEvent(CameraScanEvent.OnRequestCameraPermission)
+                }
+                viewModel.onEvent(CameraScanEvent.OnDismissPermissionDialog)
             },
             onDismiss = {
-                state.value.shouldPermissionDialog = false
-                if (state.value.shouldLaunchAppSettings) {
-                    state.value.shouldLaunchAppSettings = false
-
-                    Intent(
-                        Settings.ACTION_APPLICATION_SETTINGS,
-                        Uri.fromParts("package", context.packageName, null)
-                    ).also {
-                        val options = ActivityOptionsCompat.makeCustomAnimation(
-                            context,
-                            android.R.anim.fade_in,   // you can use any animation here
-                            android.R.anim.fade_out
-                        )
-                        context.startActivity(it, options.toBundle())
-                    }
-                } else {
-                    launcher.launch(Manifest.permission.CAMERA)
-
-                }
-
-            })
-
+                viewModel.onEvent(CameraScanEvent.OnDismissPermissionDialog)
+            }
+        )
     }
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
+
+    Column(modifier = Modifier.fillMaxSize()) {
         if (state.value.hasCamPermission) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f)
             ) {
-                // Camera Preview with touch to focus functionality
+                // Camera Preview
                 AndroidView(
                     factory = { context ->
                         val previewView = PreviewView(context)
@@ -207,45 +183,47 @@ fun ScanCodeScreen(
                             .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                             .build()
                         preview.setSurfaceProvider(previewView.surfaceProvider)
+
                         val imageAnalysis = ImageAnalysis.Builder()
-                            .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)
+                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                             .build()
+
                         imageAnalysis.setAnalyzer(
                             ContextCompat.getMainExecutor(context),
                             QrCodeAnalyzer { result ->
-//                                state.scannedData = result
                                 viewModel.onEvent(CameraScanEvent.OnScannedQrCode(result))
                                 viewModel.onEvent(CameraScanEvent.OnValidateRegexForUrl)
-
                             }
                         )
 
-                        // Attach touch listener for focus
+                        // Touch to focus
                         previewView.setOnTouchListener { _, event ->
                             if (event.action == MotionEvent.ACTION_DOWN) {
                                 val x = event.x
                                 val y = event.y
-                                state.value.tapPosition = Offset(x, y) // Update tap position
+
+                                // Send tap position event to ViewModel if needed
+                                // viewModel.onEvent(CameraScanEvent.OnTapToFocus(Offset(x, y)))
 
                                 val factory = previewView.meteringPointFactory
                                 val meteringPoint = factory.createPoint(x, y)
                                 val action = FocusMeteringAction.Builder(meteringPoint)
-                                    .addPoint(
-                                        meteringPoint,
-                                        FocusMeteringAction.FLAG_AF
-                                    ) // Autofocus
+                                    .addPoint(meteringPoint, FocusMeteringAction.FLAG_AF)
                                     .build()
 
-                                cameraProviderFuture.get()
-                                    .bindToLifecycle(
-                                        lifecycleOwner,
-                                        selector,
-                                        preview,
-                                        imageAnalysis
-                                    )
-                                    .cameraControl
-                                    .startFocusAndMetering(action)
-
+                                try {
+                                    cameraProviderFuture.get()
+                                        .bindToLifecycle(
+                                            lifecycleOwner,
+                                            selector,
+                                            preview,
+                                            imageAnalysis
+                                        )
+                                        .cameraControl
+                                        .startFocusAndMetering(action)
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
                                 true
                             } else {
                                 false
@@ -268,18 +246,10 @@ fun ScanCodeScreen(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // Add focus overlay
+                // Focus overlay (you might want to move this to state as well)
                 TapToFocusOverlay(tapPosition = state.value.tapPosition)
 
-                // Reset tap position after 1 second
-                LaunchedEffect(state.value.tapPosition) {
-                    if (state.value.tapPosition != null) {
-                        delay(1000)
-                        state.value.tapPosition = null
-                    }
-                }
-
-                // Scanning window Box (white box)
+                // Scanning window
                 Box(
                     modifier = Modifier
                         .align(Alignment.Center)
@@ -287,8 +257,16 @@ fun ScanCodeScreen(
                         .border(2.dp, Color.White)
                 )
             }
+        } else {
+            // No permission state - show permission request UI
+            PermissionRequestUI(
+                onRequestPermission = {
+                    viewModel.onEvent(CameraScanEvent.OnRequestCameraPermission)
+                }
+            )
         }
-        // Text with long press to copy functionality
+
+        // Scanned data display
         Text(
             text = state.value.scannedData,
             fontSize = 20.sp,
@@ -306,9 +284,9 @@ fun ScanCodeScreen(
                     )
                 }
         )
-
     }
-    // Dialog to confirm opening the URL
+
+    // URL confirmation dialog
     if (state.value.shouldURLDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.onEvent(CameraScanEvent.OnDismissUrlDialog) },
@@ -322,12 +300,81 @@ fun ScanCodeScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.onEvent(CameraScanEvent.OnDismissUrlDialog) }) {
+                TextButton(onClick = {
+                    viewModel.onEvent(CameraScanEvent.OnDismissUrlDialog)
+                }) {
                     Text("Cancel")
                 }
             }
         )
     }
+}
+
+@Composable
+fun PermissionRequestUI(
+    onRequestPermission: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Notifications,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Camera Permission Required",
+            style = MaterialTheme.typography.headlineMedium,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "This app needs camera access to scan QR codes",
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(onClick = onRequestPermission) {
+            Text("Grant Camera Permission")
+        }
+    }
+}
+
+@Composable
+fun PermissionDialog(
+    title: String,
+    body: String,
+    confirmButtonText: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = title) },
+        text = { Text(text = body) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(confirmButtonText)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Composable
@@ -348,7 +395,6 @@ fun TapToFocusOverlay(tapPosition: Offset?) {
         }
     }
 }
-
 
 @androidx.compose.ui.tooling.preview.Preview
 @Composable
