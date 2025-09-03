@@ -44,6 +44,8 @@ import com.iscoding.qrcode.features.scan.camera.widgets.PermissionRequestWidget
 import com.iscoding.qrcode.features.scan.camera.widgets.TapToFocusOverlay
 import com.iscoding.qrcode.features.scan.camera.widgets.URLDialog
 import com.iscoding.qrcode.features.scan.widgets.PermissionDialog
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -100,7 +102,9 @@ fun ScanCodeScreen() {
     }
 
     LaunchedEffect(Unit) {
-        viewModel.uiEvent.collect { event ->
+        viewModel.uiEvent.distinctUntilChanged()
+            .collectLatest { event ->
+
             Log.d("ISLAM", "UI Event received: $event")
             when (event) {
                 is CameraScanEffect.ShowToast -> {
@@ -153,16 +157,11 @@ fun ScanCodeScreen() {
                     .weight(1f)
             ) {
                 CameraPreviewWithScanner(
-                    onQrCodeScanned = { result ->
-                        viewModel.onEvent(CameraScanEvent.OnScannedQrCode(result))
-                        viewModel.onEvent(CameraScanEvent.OnValidateRegexForUrl)
-                    },
                     onTapToFocus = { offset ->
                         viewModel.onEvent(CameraScanEvent.OnTapToFocus(offset))
                     },
-                    modifier = Modifier.fillMaxSize()
-                )
-
+                    analyzer = viewModel.analyzer,
+                    )
                 // Focus overlay
                 TapToFocusOverlay(tapPosition = state.tapPosition)
 

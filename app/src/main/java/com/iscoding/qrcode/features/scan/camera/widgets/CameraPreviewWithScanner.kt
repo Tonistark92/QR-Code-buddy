@@ -19,12 +19,11 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.common.util.concurrent.ListenableFuture
-import com.iscoding.qrcode.features.scan.camera.QrCodeAnalyzer
 
 @Composable
 fun CameraPreviewWithScanner(
-    onQrCodeScanned: (String) -> Unit,
     onTapToFocus: (Offset) -> Unit,
+    analyzer: ImageAnalysis.Analyzer,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -40,7 +39,7 @@ fun CameraPreviewWithScanner(
                 context = context,
                 lifecycleOwner = lifecycleOwner,
                 cameraProviderFuture = cameraProviderFuture,
-                onQrCodeScanned = onQrCodeScanned,
+                analyzer = analyzer,
                 onTapToFocus = onTapToFocus
             )
         },
@@ -52,7 +51,7 @@ private fun createCameraPreview(
     context: Context,
     lifecycleOwner: LifecycleOwner,
     cameraProviderFuture: ListenableFuture<ProcessCameraProvider>,
-    onQrCodeScanned: (String) -> Unit,
+    analyzer: ImageAnalysis.Analyzer,
     onTapToFocus: (Offset) -> Unit
 ): PreviewView {
     val previewView = PreviewView(context)
@@ -65,7 +64,10 @@ private fun createCameraPreview(
     preview.surfaceProvider = previewView.surfaceProvider
 
     // Setup image analysis
-    val imageAnalysis = createImageAnalysis(context, onQrCodeScanned)
+    val imageAnalysis = ImageAnalysis.Builder()
+        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+        .build()
+    imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(context), analyzer)
 
     // Bind camera
     try {
@@ -93,23 +95,6 @@ private fun createCameraPreview(
     return previewView
 }
 
-private fun createImageAnalysis(
-    context: Context,
-    onQrCodeScanned: (String) -> Unit
-): ImageAnalysis {
-    val imageAnalysis = ImageAnalysis.Builder()
-        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-        .build()
-
-    imageAnalysis.setAnalyzer(
-        ContextCompat.getMainExecutor(context),
-        QrCodeAnalyzer { result ->
-            onQrCodeScanned(result)
-        }
-    )
-
-    return imageAnalysis
-}
 
 private fun setupTouchToFocus(
     previewView: PreviewView,

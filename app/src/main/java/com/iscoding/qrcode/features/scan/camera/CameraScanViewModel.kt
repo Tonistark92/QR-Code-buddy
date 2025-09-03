@@ -1,5 +1,6 @@
 package com.iscoding.qrcode.features.scan.camera
 
+import androidx.camera.core.ImageAnalysis
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.iscoding.qrcode.domain.repos.QrCodeScanner
@@ -13,12 +14,19 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class CameraScanViewModel(
+    private val qrCodeScanner: QrCodeScanner
+
 ) : ViewModel() {
     private val _state = MutableStateFlow(CameraScanUiState())
     val state get() = _state.asStateFlow()
 
     private val _uiEvent = Channel<CameraScanEffect>()
     val uiEvent = _uiEvent.receiveAsFlow()
+
+    val analyzer: ImageAnalysis.Analyzer = qrCodeScanner.getAnalyzer { result ->
+        onEvent(CameraScanEvent.OnScannedQrCode(result))
+        onEvent(CameraScanEvent.OnValidateRegexForUrl)
+    }
 
     fun onEvent(event: CameraScanEvent) {
         when (event) {

@@ -34,7 +34,7 @@ val appModule = module {
         GenerateQRCodeViewModel( get<QrCodeGenerator>())
     }
     viewModel {
-        CameraScanViewModel()
+        CameraScanViewModel(get<QrCodeScanner>())
     }
 
 
