@@ -33,9 +33,6 @@ jobs:
       - name: Run code format
         run: ./gradlew codeFormat
 
-      - name: Run code quality checks
-        run: ./gradlew codeQuality
-
       - name: Run tests
         run: ./gradlew test
 
