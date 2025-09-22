@@ -31,33 +31,37 @@ fun AskFromCameraOrStorageScreen(navController: NavController) {
     ) {
         Image(
             painter = painterResource(id = R.drawable.storage),
-            contentDescription = "Placeholder"
+            contentDescription = "Placeholder",
         )
-        Button(onClick = { navController.navigate(Screens.ShowAllImagesScreen) },
+        Button(
+            onClick = { navController.navigate(Screens.ShowAllImagesScreen) },
             shape = RectangleShape,
-            colors = ButtonDefaults.buttonColors(
+            colors =
+            ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary, // Background color
                 contentColor = Color.White, // Text/Icon color
                 disabledContainerColor = Color.Gray, // Disabled background
-                disabledContentColor = Color.Black // Disabled text color
-            )) {
+                disabledContentColor = Color.Black, // Disabled text color
+            ),
+        ) {
             Text(text = "QR From Storage")
         }
         Image(
             painter = painterResource(id = R.drawable.camera),
-            contentDescription = "Placeholder"
+            contentDescription = "Placeholder",
         )
         Button(
             onClick = {
                 navController.navigate(Screens.ScanCode)
             },
             shape = RectangleShape,
-            colors = ButtonDefaults.buttonColors(
+            colors =
+            ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary, // Background color
                 contentColor = Color.White, // Text/Icon color
                 disabledContainerColor = Color.Gray, // Disabled background
-                disabledContentColor = Color.Black // Disabled text color
-            )
+                disabledContentColor = Color.Black, // Disabled text color
+            ),
         ) {
             Text(text = "QR From Camera")
         }

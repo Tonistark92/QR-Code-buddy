@@ -7,7 +7,10 @@ import androidx.core.content.FileProvider
 import java.io.File
 import java.io.FileOutputStream
 
-fun getImageUri(context: Context, bitmap: Bitmap): Uri? {
+fun getImageUri(
+    context: Context,
+    bitmap: Bitmap,
+): Uri? {
     val imagesFolder = File(context.cacheDir, "images")
     var uri: Uri? = null
     try {

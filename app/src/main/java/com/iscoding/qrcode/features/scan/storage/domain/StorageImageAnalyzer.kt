@@ -9,31 +9,28 @@ import com.google.zxing.NotFoundException
 import com.google.zxing.RGBLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 import java.io.InputStream
+
 class StorageImageAnalyzer(
     private val onNoQRCodeFound: () -> Unit,
-
     private val onQrCodeScanned: (String) -> Unit,
 ) {
-    fun analyze(uri: Uri, inputStream: InputStream) {
+    fun analyze(
+        uri: Uri,
+        inputStream: InputStream,
+    ) {
         try {
-            // Load bitmap from URI using BitmapFactory
             val bitmap: Bitmap? = BitmapFactory.decodeStream(inputStream)
 
             if (bitmap != null) {
-                // Convert Bitmap to BinaryBitmap for ZXing library
                 val binaryBitmap = createBinaryBitmap(bitmap)
 
                 try {
-                    // Use ZXing MultiFormatReader to decode QR code
                     val result = MultiFormatReader().decode(binaryBitmap)
 
-                    // Handle QR code result
                     val qrCodeText = result.text
-                    Log.d("StorageImageAnalyzer", "Scanned QR Code: $qrCodeText")
                     onQrCodeScanned(qrCodeText)
                 } catch (e: NotFoundException) {
                     // Handle case where no QR code is found
-                    Log.d("StorageImageAnalyzer", "No QR Code found in image: $uri")
                     onNoQRCodeFound()
                 }
             } else {

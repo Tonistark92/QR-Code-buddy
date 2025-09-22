@@ -1,6 +1,5 @@
 package com.iscoding.qrcode.features.scan.camera.widgets
 
-
 import android.content.Context
 import android.util.Log
 import android.view.MotionEvent
@@ -10,7 +9,8 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
@@ -24,14 +24,15 @@ import com.google.common.util.concurrent.ListenableFuture
 fun CameraPreviewWithScanner(
     onTapToFocus: (Offset) -> Unit,
     analyzer: ImageAnalysis.Analyzer,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    val cameraProviderFuture = remember {
-        ProcessCameraProvider.getInstance(context)
-    }
+    val cameraProviderFuture =
+        remember {
+            ProcessCameraProvider.getInstance(context)
+        }
 
     AndroidView(
         factory = { context ->
@@ -40,10 +41,10 @@ fun CameraPreviewWithScanner(
                 lifecycleOwner = lifecycleOwner,
                 cameraProviderFuture = cameraProviderFuture,
                 analyzer = analyzer,
-                onTapToFocus = onTapToFocus
+                onTapToFocus = onTapToFocus,
             )
         },
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -52,21 +53,23 @@ private fun createCameraPreview(
     lifecycleOwner: LifecycleOwner,
     cameraProviderFuture: ListenableFuture<ProcessCameraProvider>,
     analyzer: ImageAnalysis.Analyzer,
-    onTapToFocus: (Offset) -> Unit
+    onTapToFocus: (Offset) -> Unit,
 ): PreviewView {
     val previewView = PreviewView(context)
 
     // Setup preview
     val preview = Preview.Builder().build()
-    val selector = CameraSelector.Builder()
-        .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-        .build()
+    val selector =
+        CameraSelector.Builder()
+            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+            .build()
     preview.surfaceProvider = previewView.surfaceProvider
 
     // Setup image analysis
-    val imageAnalysis = ImageAnalysis.Builder()
-        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-        .build()
+    val imageAnalysis =
+        ImageAnalysis.Builder()
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
     imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(context), analyzer)
 
     // Bind camera
@@ -75,7 +78,7 @@ private fun createCameraPreview(
             lifecycleOwner,
             selector,
             preview,
-            imageAnalysis
+            imageAnalysis,
         )
     } catch (e: Exception) {
         Log.e("ISLAM", "Camera binding failed", e)
@@ -89,12 +92,11 @@ private fun createCameraPreview(
         selector = selector,
         preview = preview,
         imageAnalysis = imageAnalysis,
-        onTapToFocus = onTapToFocus
+        onTapToFocus = onTapToFocus,
     )
 
     return previewView
 }
-
 
 private fun setupTouchToFocus(
     previewView: PreviewView,
@@ -103,7 +105,7 @@ private fun setupTouchToFocus(
     selector: CameraSelector,
     preview: Preview,
     imageAnalysis: ImageAnalysis,
-    onTapToFocus: (Offset) -> Unit
+    onTapToFocus: (Offset) -> Unit,
 ) {
     previewView.setOnTouchListener { view, event ->
         if (event.action == MotionEvent.ACTION_DOWN) {
@@ -115,9 +117,10 @@ private fun setupTouchToFocus(
 
             val factory = previewView.meteringPointFactory
             val meteringPoint = factory.createPoint(x, y)
-            val action = FocusMeteringAction.Builder(meteringPoint)
-                .addPoint(meteringPoint, FocusMeteringAction.FLAG_AF)
-                .build()
+            val action =
+                FocusMeteringAction.Builder(meteringPoint)
+                    .addPoint(meteringPoint, FocusMeteringAction.FLAG_AF)
+                    .build()
 
             try {
                 cameraProviderFuture.get()
@@ -125,7 +128,7 @@ private fun setupTouchToFocus(
                         lifecycleOwner,
                         selector,
                         preview,
-                        imageAnalysis
+                        imageAnalysis,
                     )
                     .cameraControl
                     .startFocusAndMetering(action)

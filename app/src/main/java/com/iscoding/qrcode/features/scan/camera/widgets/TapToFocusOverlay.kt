@@ -17,16 +17,18 @@ import androidx.compose.ui.unit.dp
 fun TapToFocusOverlay(tapPosition: Offset?) {
     if (tapPosition != null) {
         Box(
-            modifier = Modifier
+            modifier =
+            Modifier
                 .offset { IntOffset(tapPosition.x.toInt() - 100, tapPosition.y.toInt() - 100) }
                 .size(70.dp)
                 .border(2.dp, Color.White, shape = CircleShape),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Box(
-                modifier = Modifier
+                modifier =
+                Modifier
                     .size(55.dp)
-                    .border(2.dp, Color.White.copy(alpha = 0.5f), shape = CircleShape)
+                    .border(2.dp, Color.White.copy(alpha = 0.5f), shape = CircleShape),
             )
         }
     }

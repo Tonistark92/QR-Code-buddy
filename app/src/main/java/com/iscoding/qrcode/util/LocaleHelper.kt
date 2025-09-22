@@ -9,7 +9,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import java.util.Locale
 
 object LocaleHelper {
-
     private const val PREFS_NAME = "locale_prefs"
     private const val KEY_LOCALE = "locale"
 
@@ -22,7 +21,10 @@ object LocaleHelper {
         }
     }
 
-    fun setLocale(context: Context, locale: Locale) {
+    fun setLocale(
+        context: Context,
+        locale: Locale,
+    ) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().putString(KEY_LOCALE, locale.toLanguageTag()).apply()
     }
@@ -34,21 +36,28 @@ object LocaleHelper {
     }
 
     @TargetApi(Build.VERSION_CODES.N)
-    private fun updateResourcesLocale(context: Context, locale: Locale): Context {
+    private fun updateResourcesLocale(
+        context: Context,
+        locale: Locale,
+    ): Context {
         val configuration = context.resources.configuration
         configuration.setLocale(locale)
         return context.createConfigurationContext(configuration)
     }
 
     @Suppress("DEPRECATION")
-    private fun updateResourcesLocaleLegacy(context: Context, locale: Locale): Context {
+    private fun updateResourcesLocaleLegacy(
+        context: Context,
+        locale: Locale,
+    ): Context {
         val resources = context.resources
         val configuration = resources.configuration
         configuration.locale = locale
         resources.updateConfiguration(configuration, resources.displayMetrics)
         return context
     }
+
     val LocalAppLocale = compositionLocalOf { Locale.getDefault() }
     val LocalLayoutDirection = compositionLocalOf { LayoutDirection.Ltr }
-    val LocaleConfig= compositionLocalOf<Configuration> { error("No Config provided") }
+    val LocaleConfig = compositionLocalOf<Configuration> { error("No Config provided") }
 }

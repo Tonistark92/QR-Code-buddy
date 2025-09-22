@@ -1,6 +1,5 @@
 package com.iscoding.qrcode.features.scan.camera
 
-import android.Manifest
 import androidx.compose.ui.geometry.Offset
 
 data class CameraScanUiState(
@@ -11,5 +10,5 @@ data class CameraScanUiState(
     val scannedData: String = "",
     val scannedUrl: String = "",
     val isGoodUrlRegex: Boolean = false,
-    var tapPosition: Offset? = null
+    var tapPosition: Offset? = null,
 )

@@ -2,8 +2,6 @@ package com.iscoding.qrcode.features.generate.widgets
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
-import com.iscoding.qrcode.features.generate.GenerateQRCodeState
-
 
 @Composable
 fun SmsInput(
@@ -24,7 +22,7 @@ fun SmsInput(
             shouldShowError = shouldShowErrorSmsNumber,
             onValueChange = { newText ->
                 updateStateSmsNumber(newText)
-            }
+            },
         )
         MainTextField(
             label = "Type The message",
@@ -33,7 +31,7 @@ fun SmsInput(
             shouldShowError = shouldShowErrorSmsData,
             onValueChange = { newText ->
                 updateStateSmsData(newText)
-            }
+            },
         )
     }
 }

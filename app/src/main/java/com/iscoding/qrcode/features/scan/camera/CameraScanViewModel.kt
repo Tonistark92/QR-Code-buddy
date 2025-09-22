@@ -4,8 +4,8 @@ import androidx.camera.core.ImageAnalysis
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.iscoding.qrcode.domain.repos.QrCodeScanner
-import com.iscoding.qrcode.features.scan.camera.intent.CameraScanEvent
 import com.iscoding.qrcode.features.scan.camera.intent.CameraScanEffect
+import com.iscoding.qrcode.features.scan.camera.intent.CameraScanEvent
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,8 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class CameraScanViewModel(
-    private val qrCodeScanner: QrCodeScanner
-
+    private val qrCodeScanner: QrCodeScanner,
 ) : ViewModel() {
     private val _state = MutableStateFlow(CameraScanUiState())
     val state get() = _state.asStateFlow()
@@ -23,10 +22,11 @@ class CameraScanViewModel(
     private val _uiEvent = Channel<CameraScanEffect>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
-    val analyzer: ImageAnalysis.Analyzer = qrCodeScanner.getAnalyzer { result ->
-        onEvent(CameraScanEvent.OnScannedQrCode(result))
-        onEvent(CameraScanEvent.OnValidateRegexForUrl)
-    }
+    val analyzer: ImageAnalysis.Analyzer =
+        qrCodeScanner.getAnalyzer { result ->
+            onEvent(CameraScanEvent.OnScannedQrCode(result))
+            onEvent(CameraScanEvent.OnValidateRegexForUrl)
+        }
 
     fun onEvent(event: CameraScanEvent) {
         when (event) {
@@ -49,15 +49,13 @@ class CameraScanViewModel(
                 if (!previousPermission && event.hasPermission) {
                     _state.update {
                         it.copy(
-                            shouldPermissionDialog = false,  // Dismiss permission dialog
-                            shouldLaunchAppSettings = false  // Reset settings flag
+                            shouldPermissionDialog = false, // Dismiss permission dialog
+                            shouldLaunchAppSettings = false, // Reset settings flag
                         )
                     }
                     viewModelScope.launch {
-
                         // Show success message
                         _uiEvent.send(CameraScanEffect.ShowToast("Camera permission granted!"))
-
                     }
                 }
             }
@@ -91,9 +89,7 @@ class CameraScanViewModel(
             }
 
             is CameraScanEvent.OnTapToFocus -> {
-                _state.update { it.copy( tapPosition =event.offset ) }
-
-
+                _state.update { it.copy(tapPosition = event.offset) }
             }
 
             CameraScanEvent.OnClearTapToFocus -> {
@@ -101,18 +97,23 @@ class CameraScanViewModel(
             }
         }
     }
+
     private fun openAppSettings() {
         viewModelScope.launch {
             _uiEvent.send(CameraScanEffect.OpenAppSettings)
         }
     }
-    private fun handlePermissionResult(granted: Boolean, shouldShowRationale: Boolean) {
+
+    private fun handlePermissionResult(
+        granted: Boolean,
+        shouldShowRationale: Boolean,
+    ) {
         if (granted) {
             _state.update {
                 it.copy(
                     hasCamPermission = true,
                     shouldPermissionDialog = false,
-                    shouldLaunchAppSettings = false
+                    shouldLaunchAppSettings = false,
                 )
             }
         } else {
@@ -121,7 +122,7 @@ class CameraScanViewModel(
                 it.copy(
                     hasCamPermission = false,
                     shouldPermissionDialog = true,
-                    shouldLaunchAppSettings = !shouldShowRationale // If no rationale, go to settings
+                    shouldLaunchAppSettings = !shouldShowRationale, // If no rationale, go to settings
                 )
             }
 
@@ -129,12 +130,13 @@ class CameraScanViewModel(
                 if (shouldShowRationale) {
                     _uiEvent.send(CameraScanEffect.ShowToast("Camera permission is needed to scan QR codes"))
                 } else {
-                    _uiEvent.send(CameraScanEffect.ShowToast("Permission permanently denied. Please enable in settings."))
+                    _uiEvent.send(
+                        CameraScanEffect.ShowToast("Permission permanently denied. Please enable in settings."),
+                    )
                 }
             }
         }
     }
-
 
     private fun requestPermission() {
         viewModelScope.launch {
@@ -154,7 +156,7 @@ class CameraScanViewModel(
             it.copy(
                 isGoodUrlRegex = isValidUrl,
                 scannedUrl = currentData,
-                shouldURLDialog = isValidUrl
+                shouldURLDialog = isValidUrl,
             )
         }
 
@@ -179,7 +181,10 @@ class CameraScanViewModel(
     }
 
     private fun isValidUrlWithRegex(url: String): Boolean {
-        val urlPattern = Regex("""https?://(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)""")
+        val urlPattern =
+            Regex(
+                """https?://(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)""",
+            )
         return urlPattern.matches(url)
     }
 }

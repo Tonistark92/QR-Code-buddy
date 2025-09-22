@@ -1,15 +1,10 @@
 package com.iscoding.qrcode.features.generate.widgets
 
-
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.iscoding.qrcode.features.generate.GenerateQRCodeState
-
 
 @Composable
 fun EventInput(
@@ -28,17 +23,16 @@ fun EventInput(
     updateStateSub: (String) -> Unit,
     updateStateDTStart: (String) -> Unit,
     updateStateDTEnd: (String) -> Unit,
-    updateStateLocation: (String) -> Unit
+    updateStateLocation: (String) -> Unit,
 ) {
-
     MainTextField(
         value = eventSubject,
         onValueChange = { newText ->
-                updateStateSub(newText)
+            updateStateSub(newText)
         },
         label = "e.g., Meeting",
         shouldShowError = shouldShowErrorEventSubject,
-        errorMessage =errorMessageEventSubject
+        errorMessage = errorMessageEventSubject,
     )
 
     Spacer(modifier = Modifier.height(8.dp))
@@ -47,12 +41,11 @@ fun EventInput(
         value = eventDTStart,
         onValueChange = { newText ->
 
-                updateStateDTStart(newText)
+            updateStateDTStart(newText)
         },
         label = "Type The Event Start Time And Date",
-
         shouldShowError = shouldShowErrorEventDTStart,
-        errorMessage =errorMessageEventDTStart
+        errorMessage = errorMessageEventDTStart,
 //        placeholder = { Text(text = "e.g., 20240622T190000") },
     )
     Spacer(modifier = Modifier.height(8.dp))
@@ -60,11 +53,11 @@ fun EventInput(
     MainTextField(
         value = eventDTEnd,
         onValueChange = { newText ->
-                updateStateDTEnd(newText)
+            updateStateDTEnd(newText)
         },
         label = "Type The Event End Time And Date",
         shouldShowError = shouldShowErrorEventDTEnd,
-        errorMessage = errorMessageEventDTEnd
+        errorMessage = errorMessageEventDTEnd,
 //        placeholder = { Text(text = "e.g., 20240622T210000") },
     )
     Spacer(modifier = Modifier.height(8.dp))
@@ -72,12 +65,12 @@ fun EventInput(
     MainTextField(
         value = eventLocation,
         onValueChange = { newText ->
-                updateStateLocation(newText)
+            updateStateLocation(newText)
         },
         label = "Type The Location for The Event",
         shouldShowError = shouldShowErrorEventLocation,
-        errorMessage =errorMessageEventLocation
+        errorMessage = errorMessageEventLocation,
 //        placeholder = { Text(text = "e.g., Office") },
     )
     Spacer(modifier = Modifier.height(8.dp))
-    }
+}

@@ -1,0 +1,30 @@
+# # EditorConfig is awesome: https://EditorConfig.org
+#
+# root = true
+#
+# [*]
+# charset = utf-8
+# end_of_line = lf
+# indent_style = space
+# indent_size = 4
+# insert_final_newline = true
+# trim_trailing_whitespace = true
+# max_line_length = 120
+#
+# [*.{kt,kts}]
+# indent_size = 4
+# continuation_indent_size = 4
+# max_line_length = 120
+# ij_kotlin_allow_trailing_comma = false
+# ij_kotlin_allow_trailing_comma_on_call_site = false
+# ktlint_function_naming_ignore_when_annotated_with = Composable, Test
+#
+# # Add the specific rules you want to ignore
+# ktlint_disabled_rules = no-empty-file, function-naming, filename, package-name
+# ktlint_function_naming_ignore_when_annotated_with = Composable, Test, Preview
+# ktlint_function_naming_pattern = ^[a-z][a-zA-Z0-9]*|^[A-Z][a-zA-Z0-9]*
+# [*.{json,yml,yaml}]
+# indent_size = 2
+#
+# [*.xml]
+# indent_size = 4

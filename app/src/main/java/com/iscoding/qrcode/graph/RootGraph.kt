@@ -18,75 +18,72 @@ import com.iscoding.qrcode.features.generate.GenerateQRCodeScreen
 import com.iscoding.qrcode.features.generate.MainScreen
 import com.iscoding.qrcode.features.scan.AskFromCameraOrStorageScreen
 import com.iscoding.qrcode.features.scan.camera.ScanCodeScreen
-import com.iscoding.qrcode.features.scan.storage.StorageScanScreen
+import com.iscoding.qrcode.features.scan.storage.allimages.StorageScanScreen
 import com.iscoding.qrcode.features.scan.storage.details.QrDetailScreen
 
 @SuppressLint("NewApi")
 @Composable
 fun RootNavigationGraph(navController: NavHostController) {
     NavHost(
-        navController = navController,
-        startDestination = Screens.MainScreen
-    ) {
-        composable(route = Screens.MainScreen) {
-            AnimatedScreenTransition {
+        navController =
 
+        navController,
+        startDestination = Screens.MainScreen,
+    ) {
+        composable(
+            route = Screens.MainScreen,
+        ) {
+            AnimatedScreenTransition {
                 MainScreen(navController = navController)
             }
-
         }
         composable(route = Screens.ScanCode) {
             AnimatedScreenTransition {
-
                 ScanCodeScreen()
             }
         }
         composable(route = Screens.GenerateCode) {
             AnimatedScreenTransition {
-
                 GenerateQRCodeScreen()
             }
         }
         composable(route = Screens.ShowAllImagesScreen) {
             AnimatedScreenTransition {
-
-
-            StorageScanScreen(navController = navController)
+                StorageScanScreen(navController = navController)
             }
         }
         composable(route = Screens.GenerateCode) {
             AnimatedScreenTransition {
-
                 GenerateQRCodeScreen()
             }
-            }
+        }
         composable(route = Screens.AskFromCameraOrStorageScreen) {
             AnimatedScreenTransition {
-
                 AskFromCameraOrStorageScreen(navController = navController)
             }
-            }
+        }
 
         composable(
             //      /ShowQrCodeDataScreen
             route = "${Screens.ShowQRCodeDataScreen}/{qrCodeData}/{imageUri}",
-            arguments = listOf(
+            arguments =
+            listOf(
                 navArgument("qrCodeData") { type = NavType.StringType },
-                navArgument("imageUri") { type = NavType.StringType }
+                navArgument("imageUri") { type = NavType.StringType },
             ),
-            deepLinks = listOf(navDeepLink {
-                uriPattern =
-                    "qrcodebuddy://${Screens.ShowQRCodeDataScreenDeepLink}/{qrCodeData}/{imageUri}"
-            })
+            deepLinks =
+            listOf(
+                navDeepLink {
+                    uriPattern =
+                        "qrcodebuddy://${Screens.ShowQRCodeDataScreenDeepLink}/{qrCodeData}/{imageUri}"
+                },
+            ),
         ) { backStackEntry ->
             val qrCodeData = backStackEntry.arguments?.getString("qrCodeData")
             val imageUri = backStackEntry.arguments?.getString("imageUri")
-            AnimatedScreenTransition{
-
-            QrDetailScreen(qrCodeData = qrCodeData!!, imageUri = imageUri!!)
+            AnimatedScreenTransition {
+                QrDetailScreen(qrCodeData = qrCodeData!!, imageUri = imageUri!!)
             }
-
-
         }
     }
 }
@@ -94,12 +91,12 @@ fun RootNavigationGraph(navController: NavHostController) {
 @Composable
 fun AnimatedScreenTransition(
 //    isVisible: Boolean,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     AnimatedVisibility(
         visible = true,
         enter = fadeIn(animationSpec = tween(500)) + slideInHorizontally(initialOffsetX = { it }),
-        exit = fadeOut(animationSpec = tween(500)) + slideOutHorizontally(targetOffsetX = { -it })
+        exit = fadeOut(animationSpec = tween(500)) + slideOutHorizontally(targetOffsetX = { -it }),
     ) {
         content()
     }

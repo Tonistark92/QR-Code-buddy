@@ -1,13 +1,13 @@
 package com.iscoding.qrcode.data.repos
 
-//import com.iscoding.qrcode.data.local.Generated
-//import com.iscoding.qrcode.data.local.GeneratedDao
-//import com.iscoding.qrcode.data.local.Scanned
-//import com.iscoding.qrcode.data.local.ScannedDao
-//import com.iscoding.qrcode.domain.repos.QRCodeRepository
-//import kotlinx.coroutines.flow.Flow
+// import com.iscoding.qrcode.data.local.Generated
+// import com.iscoding.qrcode.data.local.GeneratedDao
+// import com.iscoding.qrcode.data.local.Scanned
+// import com.iscoding.qrcode.data.local.ScannedDao
+// import com.iscoding.qrcode.domain.repos.QRCodeRepository
+// import kotlinx.coroutines.flow.Flow
 //
-//class QRCodeRepositoryImp(private val scannedDao: ScannedDao,private val generatedDao: GeneratedDao) : QRCodeRepository {
+// class QRCodeRepositoryImp(private val scannedDao: ScannedDao,private val generatedDao: GeneratedDao) : QRCodeRepository {
 //
 //    fun getAllUsers(): Flow<List<Scanned>> = scannedDao.getAllScanned()
 //
@@ -31,4 +31,4 @@ package com.iscoding.qrcode.data.repos
 //        generatedDao.insert(genrated = generated)
 //    }
 //
-//}
+// }

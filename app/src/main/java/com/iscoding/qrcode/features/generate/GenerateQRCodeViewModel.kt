@@ -1,31 +1,27 @@
 package com.iscoding.qrcode.features.generate
 
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
 import com.iscoding.qrcode.domain.repos.QrCodeGenerator
 import com.iscoding.qrcode.features.generate.event.GenerateQRCodeUiEvent
 import com.iscoding.qrcode.features.generate.event.GenerateQrEvent
 import com.iscoding.qrcode.features.generate.util.QrDataType
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
-
+import kotlinx.coroutines.launch
 
 class GenerateQRCodeViewModel(
-    private val qrCodeGenerator: QrCodeGenerator
+    private val qrCodeGenerator: QrCodeGenerator,
 ) : ViewModel() {
-
-
     private val _state = MutableStateFlow(GenerateQRCodeState())
     val state get() = _state.asStateFlow()
 
     private val _uiEvent = Channel<GenerateQRCodeUiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
-
 
     fun validateInput(chosenData: QrDataType): Boolean {
         return when (chosenData) {
@@ -43,7 +39,9 @@ class GenerateQRCodeViewModel(
 
             QrDataType.URL -> {
                 val urlPattern =
-                    Regex("""https?://(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)""")
+                    Regex(
+                        """https?://(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)""",
+                    )
 
                 if (_state.value.url.isNotEmpty() && urlPattern.matches(_state.value.url)) {
                     _state.update { it.copy(shouldShowErrorUrl = false) }
@@ -96,7 +94,7 @@ class GenerateQRCodeViewModel(
                         shouldShowErrorEventSubject = !isSubjectValid,
                         shouldShowErrorEventLocation = !isLocationValid,
                         shouldShowErrorEventDTStart = !isStartValid,
-                        shouldShowErrorEventDTEnd = !isEndValid
+                        shouldShowErrorEventDTEnd = !isEndValid,
                     )
                 }
 
@@ -110,7 +108,7 @@ class GenerateQRCodeViewModel(
                 _state.update {
                     it.copy(
                         shouldShowErrorSmsNumber = !isNumberValid,
-                        shouldShowErrorSmsData = !isMessageValid
+                        shouldShowErrorSmsData = !isMessageValid,
                     )
                 }
 
@@ -128,7 +126,6 @@ class GenerateQRCodeViewModel(
                 _state.update { it.copy(shouldShowErrorPlainText = !isValid) }
                 isValid
             }
-
         }
     }
 
@@ -145,11 +142,12 @@ class GenerateQRCodeViewModel(
 
             QrDataType.MAIL -> {
                 if (validateInput(QrDataType.MAIL)) {
-                    val formattedMail = if (_state.value.mail.startsWith("mailto:")) {
-                        _state.value.mail
-                    } else {
-                        "mailto:${_state.value.mail}"
-                    }
+                    val formattedMail =
+                        if (_state.value.mail.startsWith("mailto:")) {
+                            _state.value.mail
+                        } else {
+                            "mailto:${_state.value.mail}"
+                        }
                     _state.update { it.copy(formattedMail = formattedMail) }
                     isFormattedAndReady = true
                 }
@@ -157,11 +155,12 @@ class GenerateQRCodeViewModel(
 
             QrDataType.TEL -> {
                 if (validateInput(QrDataType.TEL)) {
-                    val formattedTel = if (_state.value.tel.startsWith("tel:")) {
-                        _state.value.tel
-                    } else {
-                        "tel:${_state.value.tel}"
-                    }
+                    val formattedTel =
+                        if (_state.value.tel.startsWith("tel:")) {
+                            _state.value.tel
+                        } else {
+                            "tel:${_state.value.tel}"
+                        }
                     _state.update { it.copy(formattedTel = formattedTel) }
                     isFormattedAndReady = true
                 }
@@ -169,17 +168,18 @@ class GenerateQRCodeViewModel(
 
             QrDataType.SMS -> {
                 if (validateInput(QrDataType.SMS)) {
-                    val formattedSMS = if (_state.value.formattedSMS.startsWith("sms:")) {
-                        "\n Tel: ${_state.value.smsNumber} \n data: ${_state.value.smsData}".trimMargin()
-                    } else {
-                        " \n sms: \n Tel: ${_state.value.smsNumber} \n data: ${_state.value.smsData}".trimMargin()
-                    }
+                    val formattedSMS =
+                        if (_state.value.formattedSMS.startsWith("sms:")) {
+                            "\n Tel: ${_state.value.smsNumber} \n data: ${_state.value.smsData}".trimMargin()
+                        } else {
+                            " \n sms: \n Tel: ${_state.value.smsNumber} \n data: ${_state.value.smsData}".trimMargin()
+                        }
 
                     _state.update {
                         it.copy(
                             smsData = _state.value.smsData,
                             smsNumber = _state.value.smsNumber,
-                            formattedSMS = formattedSMS
+                            formattedSMS = formattedSMS,
                         )
                     }
                     isFormattedAndReady = true
@@ -188,18 +188,19 @@ class GenerateQRCodeViewModel(
 
             QrDataType.GEO -> {
                 if (validateInput(QrDataType.GEO)) {
-                    val formattedGeo = if (_state.value.formattedGeo.startsWith("geo:")) {
-                        """
+                    val formattedGeo =
+                        if (_state.value.formattedGeo.startsWith("geo:")) {
+                            """
                      lat: ${_state.value.geoLatitude}
                      long: ${_state.value.geoLongitude}
-                 """.trimMargin()
-                    } else {
-                        """
+                            """.trimMargin()
+                        } else {
+                            """
                      geo:
                      lat: ${_state.value.geoLatitude}
                      long: ${_state.value.geoLongitude}
-                 """.trimMargin()
-                    }
+                            """.trimMargin()
+                        }
 
                     _state.update { it.copy(formattedGeo = formattedGeo) }
                     isFormattedAndReady = true
@@ -208,14 +209,15 @@ class GenerateQRCodeViewModel(
 
             QrDataType.EVENT -> {
                 if (validateInput(QrDataType.EVENT)) {
-                    val formattedEvent = """
-                BEGIN:EVENT
-                SUMMARY:${_state.value.eventSubject}
-                DTSTART:${_state.value.eventDTStart}
-                DTEND:${_state.value.eventDTEnd}
-                LOCATION:${_state.value.eventLocation}
-                END:EVENT
-                """.trimIndent()
+                    val formattedEvent =
+                        """
+                        BEGIN:EVENT
+                        SUMMARY:${_state.value.eventSubject}
+                        DTSTART:${_state.value.eventDTStart}
+                        DTEND:${_state.value.eventDTEnd}
+                        LOCATION:${_state.value.eventLocation}
+                        END:EVENT
+                        """.trimIndent()
 
                     _state.update { it.copy(formattedEvent = formattedEvent) }
                     isFormattedAndReady = true
@@ -228,16 +230,13 @@ class GenerateQRCodeViewModel(
                     isFormattedAndReady = true
                 }
             }
-
         }
 
         return isFormattedAndReady
     }
 
-
     fun onEvent(event: GenerateQrEvent) {
         when (event) {
-
             //  Text Input Fields
             is GenerateQrEvent.OnTextChanged -> {
                 _state.update { it.copy(plainText = event.text) }
@@ -299,7 +298,7 @@ class GenerateQRCodeViewModel(
                         formattedTel = "",
                         formattedSMS = "",
                         formattedGeo = "",
-                        formattedEvent = ""
+                        formattedEvent = "",
                     )
                 }
             }
@@ -316,7 +315,7 @@ class GenerateQRCodeViewModel(
             }
             is GenerateQrEvent.GenerateQRCode -> {
                 viewModelScope.launch {
-                    _state.update { it.copy(  isLoading = true) }
+                    _state.update { it.copy(isLoading = true) }
                     delay(2000)
 
                     val isFormatted = formatData(_state.value.pickedType)
@@ -328,17 +327,23 @@ class GenerateQRCodeViewModel(
 
                     val updatedState = _state.value
 
-                    val data = when (updatedState.pickedType) {
-                        QrDataType.URL -> updatedState.formattedUrl
-                        QrDataType.MAIL -> updatedState.formattedMail
-                        QrDataType.TEL -> updatedState.formattedTel
-                        QrDataType.SMS -> updatedState.formattedSMS
-                        QrDataType.GEO -> updatedState.formattedGeo
-                        QrDataType.EVENT -> updatedState.formattedEvent
-                        QrDataType.TEXT -> updatedState.formattedText
-                    }
+                    val data =
+                        when (updatedState.pickedType) {
+                            QrDataType.URL -> updatedState.formattedUrl
+                            QrDataType.MAIL -> updatedState.formattedMail
+                            QrDataType.TEL -> updatedState.formattedTel
+                            QrDataType.SMS -> updatedState.formattedSMS
+                            QrDataType.GEO -> updatedState.formattedGeo
+                            QrDataType.EVENT -> updatedState.formattedEvent
+                            QrDataType.TEXT -> updatedState.formattedText
+                        }
 
-                   _state.update { it.copy(qrBitmap = qrCodeGenerator.generate(data = data, 512, 512) , isLoading = false) }
+                    _state.update {
+                        it.copy(
+                            qrBitmap = qrCodeGenerator.generate(data = data, 512, 512),
+                            isLoading = false,
+                        )
+                    }
                 }
             }
 
@@ -358,8 +363,6 @@ class GenerateQRCodeViewModel(
                     )
                 }
             }
-
         }
     }
-
 }

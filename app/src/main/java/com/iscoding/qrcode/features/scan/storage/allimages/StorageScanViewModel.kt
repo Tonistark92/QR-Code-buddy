@@ -1,4 +1,4 @@
-package com.iscoding.qrcode.features.scan.storage
+package com.iscoding.qrcode.features.scan.storage.allimages
 
 import android.content.ContentUris
 import android.content.Context
@@ -12,9 +12,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class StorageScanViewModel  : ViewModel() {
+class StorageScanViewModel : ViewModel() {
     val photosStateShared = mutableStateOf<List<SharedStoragePhoto>>(emptyList())
-
 
     fun loadShared(c: Context) {
         viewModelScope.launch(Dispatchers.Default) {
@@ -23,20 +22,20 @@ class StorageScanViewModel  : ViewModel() {
         }
     }
 
-
-
     suspend fun loadPhotosFromExternalStorage(c: Context): List<SharedStoragePhoto> {
         return withContext(Dispatchers.Default) {
-            val collection = sdk29AndUp {
-                MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-            } ?: MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            val projection = arrayOf(
-                MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DISPLAY_NAME,
-                MediaStore.Images.Media.WIDTH,
-                MediaStore.Images.Media.HEIGHT,
-                MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
-            )
+            val collection =
+                sdk29AndUp {
+                    MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+                } ?: MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            val projection =
+                arrayOf(
+                    MediaStore.Images.Media._ID,
+                    MediaStore.Images.Media.DISPLAY_NAME,
+                    MediaStore.Images.Media.WIDTH,
+                    MediaStore.Images.Media.HEIGHT,
+                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
+                )
             val photos = mutableListOf<SharedStoragePhoto>()
 
             c.contentResolver.query(
@@ -44,7 +43,7 @@ class StorageScanViewModel  : ViewModel() {
                 projection,
                 null,
                 null,
-                "${MediaStore.Images.Media.DATE_ADDED} DESC" // Sort by DATE_ADDED in descending order
+                "${MediaStore.Images.Media.DATE_ADDED} DESC", // Sort by DATE_ADDED in descending order
             )?.use { cursor ->
                 val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
                 val displayNameColumn =
@@ -57,10 +56,11 @@ class StorageScanViewModel  : ViewModel() {
                     val displayName = cursor.getString(displayNameColumn)
                     val width = cursor.getInt(widthColumn)
                     val height = cursor.getInt(heightColumn)
-                    val contentUri = ContentUris.withAppendedId(
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        id
-                    )
+                    val contentUri =
+                        ContentUris.withAppendedId(
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                            id,
+                        )
                     photos.add(SharedStoragePhoto(id, displayName, width, height, contentUri))
                 }
                 photos.toList()

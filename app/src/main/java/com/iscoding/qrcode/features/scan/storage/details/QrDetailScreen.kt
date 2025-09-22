@@ -34,28 +34,33 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 
 @Composable
-fun QrDetailScreen(qrCodeData: String, imageUri: String) {
+fun QrDetailScreen(
+    qrCodeData: String,
+    imageUri: String,
+) {
     val context = LocalContext.current
     Column(
-        modifier = Modifier
+        modifier =
+        Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .background(MaterialTheme.colorScheme.background)
             .padding(20.dp),
         horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         val clipboardManager = LocalClipboardManager.current // ClipboardManager instance
 
         Text(
             text = "QR Code Data Scanned from the image selected:",
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.primary,
         )
         Spacer(modifier = Modifier.height(20.dp))
         Text(
             text = qrCodeData,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier
+            modifier =
+            Modifier
                 .fillMaxWidth()
                 .pointerInput(Unit) {
                     detectTapGestures(
@@ -63,63 +68,65 @@ fun QrDetailScreen(qrCodeData: String, imageUri: String) {
                             clipboardManager.setText(AnnotatedString(qrCodeData))
                             Toast.makeText(context, "Text copied to clipboard", Toast.LENGTH_SHORT)
                                 .show()
-                        }
+                        },
                     )
                 },
-            color = MaterialTheme.colorScheme.surface
+            color = MaterialTheme.colorScheme.surface,
         )
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = "If you long press on it will copy in your keyboard!",
-            color = MaterialTheme.colorScheme.surface
+            color = MaterialTheme.colorScheme.surface,
         )
         Spacer(modifier = Modifier.height(8.dp))
 
         // Display the image using the provided URI
-     Column (modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center){
-         Image(
-             painter = rememberImagePainter(imageUri),
-             contentDescription = null,
-             contentScale = ContentScale.Fit,
-             modifier = Modifier.size(300.dp)
-         )
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Image(
+                painter = rememberImagePainter(imageUri),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(300.dp),
+            )
 
-         val isUrl = isValidUrlWithRegex(qrCodeData)
+            val isUrl = isValidUrlWithRegex(qrCodeData)
 
-         // Display a button to open the URL in a browser if valid
-         if (isUrl) {
-             Spacer(modifier = Modifier.height(20.dp))
+            // Display a button to open the URL in a browser if valid
+            if (isUrl) {
+                Spacer(modifier = Modifier.height(20.dp))
 
-             Button(
-                 onClick = {
-                     val context = context
-                     val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(qrCodeData))
-                     context.startActivity(intent)
-                 },
-
-                 shape = RectangleShape,
-                 colors = ButtonDefaults.buttonColors(
-                     containerColor = MaterialTheme.colorScheme.primary, // Background color
-                     contentColor = Color.White, // Text/Icon color
-                     disabledContainerColor = Color.Gray, // Disabled background
-                     disabledContentColor = Color.Black // Disabled text color
-                 ),
-                 modifier = Modifier.padding(16.dp)
-             ) {
-                 Text("Open in Browser")
-             }
-         }
-
-     }
-
+                Button(
+                    onClick = {
+                        val context = context
+                        val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(qrCodeData))
+                        context.startActivity(intent)
+                    },
+                    shape = RectangleShape,
+                    colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary, // Background color
+                        contentColor = Color.White, // Text/Icon color
+                        disabledContainerColor = Color.Gray, // Disabled background
+                        disabledContentColor = Color.Black, // Disabled text color
+                    ),
+                    modifier = Modifier.padding(16.dp),
+                ) {
+                    Text("Open in Browser")
+                }
+            }
+        }
     }
-
 }
 
 fun isValidUrlWithRegex(url: String): Boolean {
     val urlPattern =
-        Regex("""https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)""")
+        Regex(
+            """https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)""",
+        )
     return urlPattern.matches(url)
 }
-

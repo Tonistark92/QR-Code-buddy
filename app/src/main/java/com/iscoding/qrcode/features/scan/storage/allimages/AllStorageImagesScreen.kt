@@ -1,4 +1,4 @@
-package com.iscoding.qrcode.features.scan.storage
+package com.iscoding.qrcode.features.scan.storage.allimages
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -12,7 +12,13 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
@@ -33,10 +39,9 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.iscoding.qrcode.features.scan.storage.StorageScanViewModel
-import com.iscoding.qrcode.graph.Screens
 import com.iscoding.qrcode.domain.model.SharedStoragePhoto
 import com.iscoding.qrcode.features.scan.storage.domain.StorageImageAnalyzer
+import com.iscoding.qrcode.graph.Screens
 import java.io.IOException
 import java.io.InputStream
 
@@ -48,37 +53,39 @@ fun StorageScanScreen(navController: NavController) {
     var photosShared by remember { mutableStateOf<List<SharedStoragePhoto>>(emptyList()) }
 
     val viewModel: StorageScanViewModel = viewModel()
-    val multiplePermissionsState = rememberMultiplePermissionsState(
-        listOf(
-            Manifest.permission.READ_EXTERNAL_STORAGE
+    val multiplePermissionsState =
+        rememberMultiplePermissionsState(
+            listOf(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+            ),
         )
-    )
 
     if (multiplePermissionsState.allPermissionsGranted) {
         viewModel.loadShared(context)
         photosShared = viewModel.photosStateShared.value
         Log.d("TAGEff", photosShared.toString())
     }
-    Box(modifier = Modifier.padding(16.dp).fillMaxSize().background(MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center){
-        if (viewModel.photosStateShared.value.isEmpty()){
+    Box(
+        modifier = Modifier.padding(16.dp).fillMaxSize().background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (viewModel.photosStateShared.value.isEmpty()) {
             CircularProgressIndicator(
                 modifier = Modifier.width(64.dp),
                 color = Color(0xFF138173),
-
                 trackColor = Color(0xFF8AE5D0),
-
-                )
+            )
         }
         if (photosShared.isNotEmpty()) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 items(photosShared) { photo ->
                     PhotoItem(photo = photo) { selectedUri ->
                         // Handle click on the image here
                         Log.d("ClickedImage", "Clicked on image: $selectedUri")
-                        analyzeImage(context.contentResolver,context, selectedUri, navController)
+                        analyzeImage(context.contentResolver, context, selectedUri, navController)
                     }
                 }
             }
@@ -89,29 +96,29 @@ fun StorageScanScreen(navController: NavController) {
 @Composable
 private fun PhotoItem(
     photo: SharedStoragePhoto,
-    onItemClick: (Uri) -> Unit
+    onItemClick: (Uri) -> Unit,
 ) {
     Box(
-        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+        modifier =
+        Modifier.background(MaterialTheme.colorScheme.background)
             .padding(8.dp)
-            .clickable { onItemClick(photo.contentUri) }
+            .clickable { onItemClick(photo.contentUri) },
     ) {
         Image(
             painter = rememberImagePainter(photo.contentUri),
             contentDescription = null,
             modifier = Modifier.size(250.dp),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
         )
     }
     Spacer(modifier = Modifier.height(12.dp))
 }
 
-
 private fun analyzeImage(
     contentResolver: ContentResolver,
     context: Context,
     uri: Uri,
-    navController: NavController
+    navController: NavController,
 ) {
     try {
         // Open an input stream from the URI
@@ -129,11 +136,11 @@ private fun analyzeImage(
 
             val inputStream = context.contentResolver.openInputStream(uri)
             inputStream?.use {
-                StorageImageAnalyzer (
+                StorageImageAnalyzer(
                     onNoQRCodeFound = {
                         Toast.makeText(context, "There is no QR Code in this image ", Toast.LENGTH_LONG).show()
-
-                    } ){ qrCodeData ->
+                    },
+                ) { qrCodeData ->
                     // Handle QR code data here, e.g., show a dialog, navigate to a new screen
                     Log.d("StorageScanScreen", "Scanned QR Code: $qrCodeData")
                     // Example: Show a Toast

@@ -62,8 +62,6 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenerateQRCodeScreen() {
-
-
     val viewModel = koinViewModel<GenerateQRCodeViewModel>()
     val state = viewModel.state.collectAsStateWithLifecycle()
     val shareImageLauncher =
@@ -79,13 +77,14 @@ fun GenerateQRCodeScreen() {
                 is GenerateQRCodeUiEvent.RequestShare -> {
                     val uri = getImageUri(context, event.bitmap)
                     if (uri != null) {
-                        val shareIntent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_STREAM, uri)
-                            type = "image/png"
-                        }
+                        val shareIntent =
+                            Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_STREAM, uri)
+                                type = "image/png"
+                            }
                         shareImageLauncher.launch(
-                            Intent.createChooser(shareIntent, "Share QR Code")
+                            Intent.createChooser(shareIntent, "Share QR Code"),
                         )
                     } else {
                         Toast.makeText(context, "Could not get image URI", Toast.LENGTH_SHORT)
@@ -107,23 +106,21 @@ fun GenerateQRCodeScreen() {
 //        }
 
         Column(
-            modifier = Modifier
+            modifier =
+            Modifier
                 .fillMaxSize()
                 .padding(40.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             Box(modifier = Modifier.height(200.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
-
-
                 if (state.value.qrBitmap != null) {
                     Image(
                         bitmap = state.value.qrBitmap!!.asImageBitmap(),
-                        contentDescription = "QR Code"
+                        contentDescription = "QR Code",
                     )
                 } else {
-
                     ShimmerImage(isLoading = state.value.isLoading) {
                         Image(
                             painter = painterResource(id = R.drawable.no_pictures),
@@ -141,46 +138,43 @@ fun GenerateQRCodeScreen() {
                 onExpandedChange = {
                     isExpanded.value = !isExpanded.value
                 },
-                modifier = Modifier
+                modifier =
+                Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
+                    .wrapContentHeight(),
             ) {
-
                 TextField(
                     value = context.getString(state.value.pickedType.labelResId),
-                    colors = TextFieldDefaults.colors(
+                    colors =
+                    TextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.tertiary, // Only customize this
                         unfocusedContainerColor = MaterialTheme.colorScheme.surface, // Optional
-                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,  // Optional
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant,// Optional
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary, // Optional
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant, // Optional
                         cursorColor = MaterialTheme.colorScheme.primary,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Gray,
                         errorLabelColor = Color.Red,
-
-                        ),
+                    ),
                     onValueChange = {
-
                     },
                     readOnly = true,
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded.value)
                     },
-
-                    modifier = Modifier
+                    modifier =
+                    Modifier
                         .menuAnchor()
                         .background(MaterialTheme.colorScheme.primary)
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
                 )
 
                 ExposedDropdownMenu(
                     expanded = isExpanded.value,
                     onDismissRequest = {
                         isExpanded.value = false
-
                     },
-                    modifier = Modifier.background(MaterialTheme.colorScheme.secondary)
-
+                    modifier = Modifier.background(MaterialTheme.colorScheme.secondary),
                 ) {
                     dataTypesList.forEach { item ->
                         DropdownMenuItem(
@@ -190,116 +184,119 @@ fun GenerateQRCodeScreen() {
                                 state.value.qrBitmap = null
                                 isExpanded.value = false
                             },
-                            colors = MenuDefaults.itemColors(
+                            colors =
+                            MenuDefaults.itemColors(
                                 textColor = Color.White,
-
-                                ),
-                            modifier = Modifier.background(MaterialTheme.colorScheme.secondary)
+                            ),
+                            modifier = Modifier.background(MaterialTheme.colorScheme.secondary),
                         )
                     }
                 }
             }
             Spacer(modifier = Modifier.height(26.dp))
             when (state.value.pickedType) {
-                QrDataType.TEXT -> TextInput(
-                    plainText = state.value.plainText,
-                    errorMessagePlainText = state.value.errorMessagePlainText,
-                    shouldShowErrorPlainText = state.value.shouldShowErrorPlainText
-                ) { text ->
-                    viewModel.onEvent(GenerateQrEvent.OnTextChanged(text))
-                }
-
-                QrDataType.TEL -> TelInput(
-                    tel = state.value.tel,
-                    errorMessageTel = state.value.errorMessageTel,
-                    shouldShowErrorTel = state.value.shouldShowErrorTel
-
-                ) { tel ->
-                    viewModel.onEvent(GenerateQrEvent.OnTelChanged(tel))
-                }
-
-                QrDataType.SMS -> SmsInput(
-                    smsNumber = state.value.smsNumber,
-                    smsData = state.value.smsData,
-                    errorMessageSmsData = state.value.errorMessageSmsData,
-                    errorMessageSmsNumber = state.value.errorMessageSmsNumber,
-                    shouldShowErrorSmsData = state.value.shouldShowErrorSmsData,
-                    shouldShowErrorSmsNumber = state.value.shouldShowErrorSmsNumber,
-                    updateStateSmsData = { message ->
-                        viewModel.onEvent(GenerateQrEvent.OnSmsMessageChanged(message))
-                    },
-                    updateStateSmsNumber = { number ->
-                        viewModel.onEvent(GenerateQrEvent.OnSmsNumberChanged(number))
+                QrDataType.TEXT ->
+                    TextInput(
+                        plainText = state.value.plainText,
+                        errorMessagePlainText = state.value.errorMessagePlainText,
+                        shouldShowErrorPlainText = state.value.shouldShowErrorPlainText,
+                    ) { text ->
+                        viewModel.onEvent(GenerateQrEvent.OnTextChanged(text))
                     }
-                )
 
-                QrDataType.MAIL -> MailInput(
-                    mail = state.value.mail,
-                    errorMessageMail = state.value.errorMessageMail,
-                    shouldShowErrorMail = state.value.shouldShowErrorMail
-
-                ) { mail ->
-                    viewModel.onEvent(GenerateQrEvent.OnMailChanged(mail))
-                }
-
-                QrDataType.URL -> URLInput(
-                    url = state.value.url,
-                    errorMessageUrl = state.value.errorMessageUrl,
-                    shouldShowErrorUrl = state.value.shouldShowErrorUrl
-                ) { url ->
-                    viewModel.onEvent(GenerateQrEvent.OnUrlChanged(url))
-                }
-
-                QrDataType.GEO -> GeoInput(
-                    geoLatitude = state.value.geoLatitude,
-                    errorMessageGeoLatitude = state.value.errorMessageGeoLatitude,
-                    shouldShowErrorGeoLatitude = state.value.shouldShowErrorGeoLatitude,
-                    geoLongitude = state.value.geoLongitude,
-                    errorMessageGeoLongitude = state.value.errorMessageGeoLongitude,
-                    shouldShowErrorGeoLongitude = state.value.shouldShowErrorGeoLongitude,
-                    updateStateLat = { latitude ->
-                        viewModel.onEvent(GenerateQrEvent.OnGeoLatitudeChanged(latitude))
-                    },
-                    updateStateLong = { longitude ->
-                        viewModel.onEvent(GenerateQrEvent.OnGeoLongitudeChanged(longitude))
+                QrDataType.TEL ->
+                    TelInput(
+                        tel = state.value.tel,
+                        errorMessageTel = state.value.errorMessageTel,
+                        shouldShowErrorTel = state.value.shouldShowErrorTel,
+                    ) { tel ->
+                        viewModel.onEvent(GenerateQrEvent.OnTelChanged(tel))
                     }
-                )
 
-                QrDataType.EVENT -> EventInput(
-                    eventSubject = state.value.eventSubject,
-                    errorMessageEventSubject = state.value.errorMessageEventSubject,
-                    shouldShowErrorEventSubject = state.value.shouldShowErrorEventSubject,
-                    eventDTStart = state.value.eventDTStart,
-                    errorMessageEventDTStart = state.value.errorMessageEventDTStart,
-                    shouldShowErrorEventDTStart = state.value.shouldShowErrorEventDTStart,
-                    eventDTEnd = state.value.eventDTEnd,
-                    errorMessageEventDTEnd = state.value.errorMessageEventDTEnd,
-                    shouldShowErrorEventDTEnd = state.value.shouldShowErrorEventDTEnd,
-                    eventLocation = state.value.eventLocation,
-                    errorMessageEventLocation = state.value.errorMessageEventLocation,
-                    shouldShowErrorEventLocation = state.value.shouldShowErrorEventLocation,
+                QrDataType.SMS ->
+                    SmsInput(
+                        smsNumber = state.value.smsNumber,
+                        smsData = state.value.smsData,
+                        errorMessageSmsData = state.value.errorMessageSmsData,
+                        errorMessageSmsNumber = state.value.errorMessageSmsNumber,
+                        shouldShowErrorSmsData = state.value.shouldShowErrorSmsData,
+                        shouldShowErrorSmsNumber = state.value.shouldShowErrorSmsNumber,
+                        updateStateSmsData = { message ->
+                            viewModel.onEvent(GenerateQrEvent.OnSmsMessageChanged(message))
+                        },
+                        updateStateSmsNumber = { number ->
+                            viewModel.onEvent(GenerateQrEvent.OnSmsNumberChanged(number))
+                        },
+                    )
 
-                    updateStateSub = { subject ->
-                        viewModel.onEvent(GenerateQrEvent.OnEventSubjectChanged(subject))
-                    },
-                    updateStateDTStart = { start ->
-                        viewModel.onEvent(GenerateQrEvent.OnEventDTStartChanged(start))
-                    },
-                    updateStateDTEnd = { end ->
-                        viewModel.onEvent(GenerateQrEvent.OnEventDTEndChanged(end))
-                    },
-                    updateStateLocation = { location ->
-                        viewModel.onEvent(GenerateQrEvent.OnEventLocationChanged(location))
+                QrDataType.MAIL ->
+                    MailInput(
+                        mail = state.value.mail,
+                        errorMessageMail = state.value.errorMessageMail,
+                        shouldShowErrorMail = state.value.shouldShowErrorMail,
+                    ) { mail ->
+                        viewModel.onEvent(GenerateQrEvent.OnMailChanged(mail))
                     }
-                )
+
+                QrDataType.URL ->
+                    URLInput(
+                        url = state.value.url,
+                        errorMessageUrl = state.value.errorMessageUrl,
+                        shouldShowErrorUrl = state.value.shouldShowErrorUrl,
+                    ) { url ->
+                        viewModel.onEvent(GenerateQrEvent.OnUrlChanged(url))
+                    }
+
+                QrDataType.GEO ->
+                    GeoInput(
+                        geoLatitude = state.value.geoLatitude,
+                        errorMessageGeoLatitude = state.value.errorMessageGeoLatitude,
+                        shouldShowErrorGeoLatitude = state.value.shouldShowErrorGeoLatitude,
+                        geoLongitude = state.value.geoLongitude,
+                        errorMessageGeoLongitude = state.value.errorMessageGeoLongitude,
+                        shouldShowErrorGeoLongitude = state.value.shouldShowErrorGeoLongitude,
+                        updateStateLat = { latitude ->
+                            viewModel.onEvent(GenerateQrEvent.OnGeoLatitudeChanged(latitude))
+                        },
+                        updateStateLong = { longitude ->
+                            viewModel.onEvent(GenerateQrEvent.OnGeoLongitudeChanged(longitude))
+                        },
+                    )
+
+                QrDataType.EVENT ->
+                    EventInput(
+                        eventSubject = state.value.eventSubject,
+                        errorMessageEventSubject = state.value.errorMessageEventSubject,
+                        shouldShowErrorEventSubject = state.value.shouldShowErrorEventSubject,
+                        eventDTStart = state.value.eventDTStart,
+                        errorMessageEventDTStart = state.value.errorMessageEventDTStart,
+                        shouldShowErrorEventDTStart = state.value.shouldShowErrorEventDTStart,
+                        eventDTEnd = state.value.eventDTEnd,
+                        errorMessageEventDTEnd = state.value.errorMessageEventDTEnd,
+                        shouldShowErrorEventDTEnd = state.value.shouldShowErrorEventDTEnd,
+                        eventLocation = state.value.eventLocation,
+                        errorMessageEventLocation = state.value.errorMessageEventLocation,
+                        shouldShowErrorEventLocation = state.value.shouldShowErrorEventLocation,
+                        updateStateSub = { subject ->
+                            viewModel.onEvent(GenerateQrEvent.OnEventSubjectChanged(subject))
+                        },
+                        updateStateDTStart = { start ->
+                            viewModel.onEvent(GenerateQrEvent.OnEventDTStartChanged(start))
+                        },
+                        updateStateDTEnd = { end ->
+                            viewModel.onEvent(GenerateQrEvent.OnEventDTEndChanged(end))
+                        },
+                        updateStateLocation = { location ->
+                            viewModel.onEvent(GenerateQrEvent.OnEventLocationChanged(location))
+                        },
+                    )
             }
-
 
             // for share
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Button(
                     onClick = {
@@ -307,16 +304,16 @@ fun GenerateQRCodeScreen() {
                             viewModel.onEvent(GenerateQrEvent.ShareQRCode)
                         }
                         state.value.qrBitmap?.let {
-
                         }
                     },
                     shape = RectangleShape,
-                    colors = ButtonDefaults.buttonColors(
+                    colors =
+                    ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary, // Background color
                         contentColor = Color.White, // Text/Icon color
                         disabledContainerColor = Color.Gray, // Disabled background
-                        disabledContentColor = Color.Black // Disabled text color
-                    )
+                        disabledContentColor = Color.Black, // Disabled text color
+                    ),
 //            enabled = state.value.qrBitmap != null
                 ) {
                     Text("Share ")
@@ -327,49 +324,44 @@ fun GenerateQRCodeScreen() {
                         viewModel.onEvent(GenerateQrEvent.GenerateQRCode)
                     },
                     shape = RectangleShape,
-                    colors = ButtonDefaults.buttonColors(
+                    colors =
+                    ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary, // Background color
                         contentColor = Color.White, // Text/Icon color
                         disabledContainerColor = Color.Gray, // Disabled background
-                        disabledContentColor = Color.Black // Disabled text color
-                    )
+                        disabledContentColor = Color.Black, // Disabled text color
+                    ),
 //            enabled = state.value.qrBitmap != null // Disable the button if qrBitmapState is null
                 ) {
                     Text("Generate")
                 }
-
             }
-
-
         }
-
-
     }
 }
 
-
-//// Assume the user entered this date-time string
-//val userEnteredDateTimeString = "20240622T190000"
+// // Assume the user entered this date-time string
+// val userEnteredDateTimeString = "20240622T190000"
 //
-//// Parse the user-entered date-time string
-//val formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")
-//val localDateTime = LocalDateTime.parse(userEnteredDateTimeString, formatter)
+// // Parse the user-entered date-time string
+// val formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")
+// val localDateTime = LocalDateTime.parse(userEnteredDateTimeString, formatter)
 //
-//// Get the user's local time zone
-//val userZoneId = ZoneId.systemDefault()
+// // Get the user's local time zone
+// val userZoneId = ZoneId.systemDefault()
 //
-//// Convert LocalDateTime to ZonedDateTime with user's local time zone
-//val zonedDateTime = localDateTime.atZone(userZoneId)
+// // Convert LocalDateTime to ZonedDateTime with user's local time zone
+// val zonedDateTime = localDateTime.atZone(userZoneId)
 //
-//// Format the ZonedDateTime to a string including the time zone info
-//val formattedDateTime = zonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss a z"))
+// // Format the ZonedDateTime to a string including the time zone info
+// val formattedDateTime = zonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss a z"))
 //
-//// Print the formatted date-time string
-//println("User's local date-time: $formattedDateTime")
+// // Print the formatted date-time string
+// println("User's local date-time: $formattedDateTime")
 //
-//// Additionally, convert the ZonedDateTime to UTC and format it
-//val utcZonedDateTime = zonedDateTime.withZoneSameInstant(ZoneId.of("UTC"))
-//val formattedUtcDateTime = utcZonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"))
+// // Additionally, convert the ZonedDateTime to UTC and format it
+// val utcZonedDateTime = zonedDateTime.withZoneSameInstant(ZoneId.of("UTC"))
+// val formattedUtcDateTime = utcZonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"))
 //
-//// Print the formatted UTC date-time string
-//println("UTC date-time: $formattedUtcDateTime")
+// // Print the formatted UTC date-time string
+// println("UTC date-time: $formattedUtcDateTime")

@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 
 object PreferencesManager {
-
     private const val PREF_NAME = "app_preferences"
     private const val HAS_PERMISSIONS = "has_permissions"
     private const val IS_FIRST_LAUNCH = "is_first_launch"
