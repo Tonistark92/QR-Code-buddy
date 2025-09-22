@@ -24,3 +24,5 @@ if [ $protected_branch = $current_branch ]; then
 fi
 
 exit 0
+
+#!/usr/bin/env bash
