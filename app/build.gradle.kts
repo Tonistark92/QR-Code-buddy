@@ -113,9 +113,8 @@ spotless {
                 ),
             )
             .setEditorConfigPath("$rootDir/.editorconfig")
-
+        leadingTabsToSpaces()
         trimTrailingWhitespace()
-        indentWithSpaces()
         endWithNewline()
     }
     java {
