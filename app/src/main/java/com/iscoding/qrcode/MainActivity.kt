@@ -27,17 +27,6 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         setContent {
             val context = this
-//            val permisions = arrayOf(
-//
-//                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-//                Manifest.permission.READ_EXTERNAL_STORAGE,
-//                Manifest.permission.CAMERA
-//            )
-//
-//            LaunchedEffect(key1 = true) {
-//                ActivityCompat.requestPermissions(context , permisions, 11)
-//
-//            }
             val navController = rememberNavController()
             QRCodeTheme {
                 RootNavigationGraph(navController = navController)
