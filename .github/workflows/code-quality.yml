@@ -20,7 +20,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Cache Gradle packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
@@ -37,7 +37,7 @@ jobs:
         run: ./gradlew test
 
       - name: Upload lint reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: lint-reports
