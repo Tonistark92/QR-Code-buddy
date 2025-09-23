@@ -221,8 +221,8 @@ tasks.check {
 val codeQuality by tasks.registering {
     group = "verification"
     description = "Run all code quality checks"
-//    dependsOn("spotlessCheck", "lintDebug")
-    dependsOn("spotlessCheck")
+    dependsOn("spotlessCheck", "lintDebug")
+//    dependsOn("spotlessCheck")
 }
 
 val codeFormat by tasks.registering {
