@@ -37,17 +37,19 @@ git add .
 # Step 3: Commit message handling
 if [ -t 0 ]; then
   # Interactive terminal → ask user
-  print_color "$YELLOW" "📝 Enter your commit message:"
-  read -r commit_message
+  print_color "$YELLOW" "📝 Enter your commit message (press Ctrl+D when done):"
+
+  # Read multiple lines into a variable
+  commit_message=$(</dev/stdin)
+
   if [ -z "$commit_message" ]; then
     print_color "$RED" "❌ Commit message cannot be empty!"
     exit 1
   fi
 else
-  # Non-interactive (hook or CI) → use default message
-  commit_message="Auto-format: Spotless applied"
+  # Non-interactive (hooks/CI) → default message
+  commit_message="Is coding pushed"
 fi
-
 # Step 4: Commit
 if git commit -m "$commit_message"; then
   print_color "$GREEN" "✅ Commit created successfully!"
