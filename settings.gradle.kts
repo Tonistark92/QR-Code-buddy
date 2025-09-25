@@ -26,3 +26,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "QRCode"
 include(":app")
+include(":designsystem")

@@ -11,7 +11,7 @@ import com.google.zxing.qrcode.QRCodeWriter
 import com.iscoding.qrcode.domain.repos.QrCodeGenerator
 import java.util.Hashtable
 
-class QrCodeGeneratorImpl : QrCodeGenerator {
+class QrCodeGeneratorImp : QrCodeGenerator {
     override fun generate(
         data: String,
         width: Int,

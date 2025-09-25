@@ -96,11 +96,6 @@ spotless {
             "**/Daos.kt", // Exclude specific empty file
             "**/Entities.kt", // Exclude specific empty file
             "**/QRDataBase.kt", // Exclude specific empty file
-            "**/QRCodeRepositoryImp.kt", // Exclude specific empty file
-            "**/AllStorageImagesUiState.kt", // Exclude specific empty file
-            "**/QrDetailEvent.kt", // Exclude specific empty file
-            "**/QrDetailUiState.kt", // Exclude specific empty file
-            "**/QrDetailViewModel.kt", // Exclude specific empty file
             // Add more files as needed:
             // "**/AnotherEmptyFile.kt"
         )
@@ -194,6 +189,9 @@ dependencies {
     // splash
     implementation(libs.androidx.core.splashscreen)
     testImplementation(kotlin("test"))
+
+    implementation(libs.logcat)
+    implementation(project(":designsystem"))
 
 //    ktlint("com.pinterest:ktlint:0.50.0") {
 //        attributes {

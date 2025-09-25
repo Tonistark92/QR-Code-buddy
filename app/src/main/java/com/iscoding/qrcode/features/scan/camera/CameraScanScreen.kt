@@ -214,11 +214,6 @@ fun ScanCodeScreen() {
     }
 
     if (state.shouldPermissionDialog) {
-        Log.d(
-            "ISLAM",
-            "Showing permission dialog. shouldLaunchAppSettings: ${state.shouldLaunchAppSettings}",
-        )
-
         PermissionDialog(
             title = "Camera Permission Required",
             body =
@@ -229,11 +224,6 @@ fun ScanCodeScreen() {
             },
             confirmButtonText = if (state.shouldLaunchAppSettings) "Open Settings" else "Grant Permission",
             onConfirm = {
-                Log.d(
-                    "ISLAM",
-                    "Dialog confirm clicked. shouldLaunchAppSettings: ${state.shouldLaunchAppSettings}",
-                )
-
                 if (state.shouldLaunchAppSettings) {
                     viewModel.onEvent(CameraScanEvent.OnOpenAppSettings)
                 } else {
@@ -242,7 +232,6 @@ fun ScanCodeScreen() {
                 viewModel.onEvent(CameraScanEvent.OnDismissPermissionDialog)
             },
             onDismiss = {
-                Log.d("ISLAM", "Dialog dismissed")
                 viewModel.onEvent(CameraScanEvent.OnDismissPermissionDialog)
             },
         )

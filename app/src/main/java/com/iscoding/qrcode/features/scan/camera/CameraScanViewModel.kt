@@ -19,7 +19,7 @@ class CameraScanViewModel(
     private val _state = MutableStateFlow(CameraScanUiState())
     val state get() = _state.asStateFlow()
 
-    private val _uiEvent = Channel<CameraScanEffect>()
+    private val _uiEvent = Channel<CameraScanEffect>(Channel.BUFFERED)
     val uiEvent = _uiEvent.receiveAsFlow()
 
     val analyzer: ImageAnalysis.Analyzer =

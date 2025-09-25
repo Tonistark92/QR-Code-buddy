@@ -12,7 +12,7 @@ import com.google.zxing.common.HybridBinarizer
 import com.iscoding.qrcode.domain.repos.QrCodeScanner
 import java.nio.ByteBuffer
 
-class QrCodeScannerImpl : QrCodeScanner {
+class QrCodeScannerImp : QrCodeScanner {
     override fun getAnalyzer(onResult: (String) -> Unit): ImageAnalysis.Analyzer {
         return object : ImageAnalysis.Analyzer {
             private val supportedImageFormats =

@@ -4,9 +4,9 @@ import android.net.Uri
 
 data class SharedStoragePhoto(
     val id: Long,
-    val name: String,
+    val displayName: String,
     val width: Int,
     val height: Int,
     val contentUri: Uri,
-//    val album:String,
+    val bucketName: String,
 )

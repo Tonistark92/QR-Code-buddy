@@ -1,12 +1,15 @@
 package com.iscoding.qrcode.graph
 
 import android.annotation.SuppressLint
+import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -64,25 +67,49 @@ fun RootNavigationGraph(navController: NavHostController) {
         }
 
         composable(
-            //      /ShowQrCodeDataScreen
             route = "${Screens.ShowQRCodeDataScreen}/{qrCodeData}/{imageUri}",
-            arguments =
-            listOf(
-                navArgument("qrCodeData") { type = NavType.StringType },
-                navArgument("imageUri") { type = NavType.StringType },
+            arguments = listOf(
+                navArgument("qrCodeData") {
+                    type = NavType.StringType
+                    defaultValue = "" // Add default value
+                },
+                navArgument("imageUri") {
+                    type = NavType.StringType
+                    defaultValue = "" // Add default value
+                },
             ),
-            deepLinks =
-            listOf(
+            deepLinks = listOf(
                 navDeepLink {
-                    uriPattern =
-                        "qrcodebuddy://${Screens.ShowQRCodeDataScreenDeepLink}/{qrCodeData}/{imageUri}"
+                    uriPattern = "qrcodebuddy://${Screens.ShowQRCodeDataScreenDeepLink}/{qrCodeData}/{imageUri}"
                 },
             ),
         ) { backStackEntry ->
-            val qrCodeData = backStackEntry.arguments?.getString("qrCodeData")
-            val imageUri = backStackEntry.arguments?.getString("imageUri")
+            val encodedQrCodeData = backStackEntry.arguments?.getString("qrCodeData") ?: ""
+            val encodedImageUri = backStackEntry.arguments?.getString("imageUri") ?: ""
+
+            // Validate arguments before decoding
+            if (encodedQrCodeData.isBlank() || encodedImageUri.isBlank()) {
+                // Handle invalid arguments - maybe show error screen or go back
+                Text("Invalid QR code data")
+                return@composable
+            }
+
+            val qrCodeData = try {
+                Uri.decode(encodedQrCodeData)
+            } catch (e: Exception) {
+                Log.e("Navigation", "Failed to decode QR data: $encodedQrCodeData")
+                encodedQrCodeData
+            }
+
+            val imageUri = try {
+                Uri.decode(encodedImageUri)
+            } catch (e: Exception) {
+                Log.e("Navigation", "Failed to decode image URI: $encodedImageUri")
+                encodedImageUri
+            }
+
             AnimatedScreenTransition {
-                QrDetailScreen(qrCodeData = qrCodeData!!, imageUri = imageUri!!)
+                QrDetailScreen(qrCodeData = qrCodeData, imageUri = imageUri)
             }
         }
     }

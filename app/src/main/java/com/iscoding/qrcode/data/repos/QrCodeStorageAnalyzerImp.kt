@@ -1,22 +1,25 @@
-package com.iscoding.qrcode.features.scan.storage.domain
+package com.iscoding.qrcode.data.repos
+
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.util.Log
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.MultiFormatReader
 import com.google.zxing.NotFoundException
 import com.google.zxing.RGBLuminanceSource
 import com.google.zxing.common.HybridBinarizer
+import com.iscoding.qrcode.domain.repos.QrCodeStorageAnalyzer
+import logcat.asLog
+import logcat.logcat
 import java.io.InputStream
 
-class StorageImageAnalyzer(
-    private val onNoQRCodeFound: () -> Unit,
-    private val onQrCodeScanned: (String) -> Unit,
-) {
-    fun analyze(
+class QrCodeStorageAnalyzerImp : QrCodeStorageAnalyzer {
+
+    override fun analyze(
         uri: Uri,
         inputStream: InputStream,
+        onNoQRCodeFound: () -> Unit,
+        onQrCodeScanned: (String) -> Unit,
     ) {
         try {
             val bitmap: Bitmap? = BitmapFactory.decodeStream(inputStream)
@@ -34,11 +37,11 @@ class StorageImageAnalyzer(
                     onNoQRCodeFound()
                 }
             } else {
-                Log.e("StorageImageAnalyzer", "Failed to load Bitmap from URI: $uri")
+                logcat { "Failed to load Bitmap from URI: $uri" }
             }
         } catch (e: Exception) {
-            Log.e("StorageImageAnalyzer", "Error analyzing QR code: ${e.message}")
-            e.printStackTrace()
+            logcat { "Error analyzing QR code: ${e.message}" }
+            logcat { e.asLog() }
         } finally {
             inputStream.close()
         }
