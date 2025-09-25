@@ -95,6 +95,19 @@ class CameraScanViewModel(
             CameraScanEvent.OnClearTapToFocus -> {
                 _state.update { it.copy(tapPosition = null) }
             }
+
+            is CameraScanEvent.OnTextLongPressed -> {
+                if (!_state.value.scannedData.isEmpty()) {
+                    viewModelScope.launch {
+                        _uiEvent.send(CameraScanEffect.CopyToTheClipBoard(_state.value.scannedData))
+                        _uiEvent.send(CameraScanEffect.ShowToast("Text copied to clipboard"))
+                    }
+                } else {
+                    viewModelScope.launch {
+                        _uiEvent.send(CameraScanEffect.ShowToast("you need to scan first!"))
+                    }
+                }
+            }
         }
     }
 

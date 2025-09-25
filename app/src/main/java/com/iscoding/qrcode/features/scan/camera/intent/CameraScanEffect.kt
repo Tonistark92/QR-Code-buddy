@@ -4,6 +4,7 @@ sealed class CameraScanEffect {
     object OpenUrl : CameraScanEffect()
 
     data class ShowToast(val message: String) : CameraScanEffect()
+    data class CopyToTheClipBoard(val data: String) : CameraScanEffect()
 
     object RequestCameraPermission : CameraScanEffect()
 

@@ -147,6 +147,10 @@ fun ScanCodeScreen() {
                             context.startActivity(intent)
                         }
                     }
+
+                    is CameraScanEffect.CopyToTheClipBoard -> {
+                        clipboardManager.setText(AnnotatedString(event.data))
+                    }
                 }
             }
     }
@@ -204,9 +208,7 @@ fun ScanCodeScreen() {
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onLongPress = {
-                            clipboardManager.setText(AnnotatedString(state.scannedData))
-                            Toast.makeText(context, "Text copied to clipboard", Toast.LENGTH_SHORT)
-                                .show()
+                            viewModel.onEvent(CameraScanEvent.OnTextLongPressed)
                         },
                     )
                 },
