@@ -26,7 +26,7 @@ This Android application allows users to generate and scan QR codes. The app is 
 ---
 
 ## 📂 Project Structure
-
+```
 com.iscoding.qrcode/
 │── data/
 │ ├── local/ # [TODO: Local DB/DataStore/SharedPref if any]
@@ -98,6 +98,8 @@ res/ # Android resources
 │ └── mipmap/
 │
 AndroidManifest.xml
+```
+
 
 ## ⚙️ Setup & Installation
 
