@@ -4,29 +4,14 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
-    id("org.jetbrains.dokka")
-    id("com.diffplug.spotless")
     id("org.jlleitschuh.gradle.ktlint")
+    id("com.diffplug.spotless")
     id("io.gitlab.arturbosch.detekt")
+    id("org.jetbrains.dokka")
     kotlin("kapt")
     id("jacoco")
 }
 
-detekt {
-    toolVersion = "1.23.4"
-    config.setFrom(file("$rootDir/config/detekt/detekt.yml"))
-    buildUponDefaultConfig = true
-    autoCorrect = true
-}
-ktlint {
-    version.set("1.0.1")
-    debug.set(true)
-    verbose.set(true)
-    android.set(true)
-    outputToConsole.set(true)
-    ignoreFailures.set(false)
-    enableExperimentalRules.set(true)
-}
 android {
     namespace = "com.iscoding.qrcode"
     compileSdk = 36
@@ -39,6 +24,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -53,22 +39,27 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_1_8)
             freeCompilerArgs.add("-Xopt-in=kotlin.RequiresOptIn")
         }
     }
+
     buildFeatures {
         compose = true
     }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -76,53 +67,49 @@ android {
     }
 
     lint {
-        // Enable all lint checks
         checkAllWarnings = true
-
-        // Treat warnings as errors (optional)
         warningsAsErrors = false
-
-        // Abort build on errors
         abortOnError = false
-
-        // Generate reports
         htmlReport = true
         xmlReport = true
         textReport = true
 
-        // Report file locations
         htmlOutput = layout.buildDirectory.file("reports/lint/lint-results.html").get().asFile
         xmlOutput = layout.buildDirectory.file("reports/lint/lint-results.xml").get().asFile
         textOutput = layout.buildDirectory.file("reports/lint/lint-results.txt").get().asFile
 
-        // Custom lint rules file (optional)
         lintConfig = file("../lint.xml")
-
-        // Baseline file to ignore existing issues (optional)
         baseline = file("lint-baseline.xml")
 
-        // Disable specific checks (examples)
         disable += listOf("ContentDescription", "InvalidPackage")
-
-        // Enable specific checks
         enable += listOf("RtlHardcoded", "RtlCompat", "RtlEnabled")
 
-        // Set severity levels
         warning += "MissingTranslation"
         error += "StopShip"
     }
 }
 
+detekt {
+    toolVersion = "1.23.4"
+    config.setFrom(file("$rootDir/config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+    autoCorrect = true
+}
+
+ktlint {
+    version.set("1.0.1")
+    debug.set(true)
+    verbose.set(true)
+    android.set(true)
+    outputToConsole.set(true)
+    ignoreFailures.set(false)
+    enableExperimentalRules.set(true)
+}
+
 spotless {
     kotlin {
         target("**/*.kt")
-        targetExclude(
-            "**/build/**",
-            "**/Daos.kt",
-            "**/Entities.kt",
-            "**/QRDataBase.kt",
-        )
-
+        targetExclude("**/build/**", "**/Daos.kt", "**/Entities.kt", "**/QRDataBase.kt")
         ktlint("1.2.1")
             .editorConfigOverride(
                 mapOf(
@@ -136,25 +123,29 @@ spotless {
         trimTrailingWhitespace()
         endWithNewline()
     }
+
     java {
         target("**/*.java")
         googleJavaFormat("1.22.0")
     }
+
     format("xml") {
         target("**/*.xml")
         trimTrailingWhitespace()
     }
+
     kotlinGradle {
         target("*.kts")
         ktlint("1.2.1")
     }
 }
 
-// Ktlint Configuration
-// val ktlint by configurations.creating
+kapt {
+    correctErrorTypes = true
+}
 
 dependencies {
-
+    // Core & AndroidX
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -166,7 +157,31 @@ dependencies {
     implementation(libs.androidx.navigation.common.ktx)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material3.android)
+    implementation(libs.androidx.foundation)
+    implementation(libs.androidx.animation)
+    implementation(libs.accompanist.navigation.animation)
+    implementation(libs.accompanist.permissions)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.core.splashscreen)
+
+    // CameraX
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+
+    // QR libraries
+    implementation(libs.core.v333)
+    implementation(libs.zxing.core)
+    implementation(libs.zxing.android.embedded)
+
+    // Koin DI
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.navigation)
+    implementation(libs.koin.androidx.compose)
+
+    // Testing
     testImplementation(libs.junit)
+    testImplementation(kotlin("test"))
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -174,107 +189,49 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-//
-    implementation(libs.androidx.animation)
-    implementation(libs.accompanist.navigation.animation)
-    implementation(libs.androidx.foundation)
-
-// for scan
-    // CameraX
-    implementation(libs.androidx.camera.camera2)
-    implementation(libs.androidx.camera.lifecycle)
-    implementation(libs.androidx.camera.view)
-
-    // Zxing
-    implementation(libs.core.v333)
-
-    // for generate
-    implementation(libs.zxing.core)
-    implementation(libs.zxing.android.embedded)
-
-    implementation(libs.accompanist.permissions)
-    implementation(libs.coil.compose)
-
-//    // Room
-//    implementation("androidx.room:room-runtime:2.6.1")
-//    implementation("androidx.room:room-compiler:2.6.1")
-//    annotationProcessor("androidx.room:room-compiler:2.6.1")
-//    implementation("androidx.room:room-ktx:2.6.1")
-//    kapt( "androidx.room:room-compiler:2.6.1")
-
-    // koin
-    implementation(libs.koin.android)
-    implementation(libs.koin.androidx.navigation)
-    implementation(libs.koin.androidx.compose)
-
-    // life cycle
-    implementation(libs.lifecycle.runtime.ktx.v282)
-    // splash
-    implementation(libs.androidx.core.splashscreen)
-    testImplementation(kotlin("test"))
-
+    // Logging
     implementation(libs.logcat)
+
+    // Project modules
     implementation(project(":designsystem"))
 
+    // Detekt formatting plugin
     detektPlugins(libs.detekt.formatting)
-
-//    ktlint("com.pinterest:ktlint:0.50.0") {
-//        attributes {
-//            attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
-//        }
-//    }
-
-//    ktlint("com.pinterest.ktlint:ktlint-cli:<version>") {
-//        attributes {
-//            attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
-//        }
-//    }
-//    ktlint(libs.kotlin.stdlib.vkotlinversion)
-//
-//    ktlint(libs.ktlint.cli.v121)
-//    implementation(libs.jetbrains.kotlin.stdlib)
 }
-// Apply JaCoCo plugin
+
+// JaCoCo
 apply(plugin = "jacoco")
 
-// JaCoCo configuration
 jacoco {
     toolVersion = "0.8.8"
 }
-kapt {
-    correctErrorTypes = true
-}
+
+// Tasks
 tasks.check {
     dependsOn("spotlessCheck")
 }
 
-// val codeQuality by tasks.registering {
-//    group = "verification"
-//    description = "Run all code quality checks"
-//    dependsOn("spotlessCheck", "lintDebug")
-// //    dependsOn("spotlessCheck")
-// }
-
 tasks.register("codeQuality") {
     dependsOn("ktlintCheck", "detekt", "dokkaGenerate")
     description = "Runs all code quality checks and generates documentation"
+    group = "verification"
 }
 
 val codeFormat by tasks.registering {
-    group = "formatting"
-    description = "Format all code"
     dependsOn("spotlessApply")
+    description = "Format all code"
+    group = "formatting"
 }
 
 val fullCheck by tasks.registering {
-    group = "verification"
-    description = "Run all checks including tests"
     dependsOn("clean", "codeQuality", "test")
+    description = "Run all checks including tests"
+    group = "verification"
 }
-// Custom JaCoCo task for combined coverage
+
+// Jacoco report
 tasks.register<JacocoReport>("jacocoTestReport") {
     dependsOn("testDebugUnitTest")
-
     group = "Reporting"
     description = "Generate Jacoco coverage reports for Debug build"
 
@@ -292,7 +249,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
             "**/Manifest*.*",
             "**/*Test*.*",
             "android/**/*.*",
-            "**/data/models/**", // Add your exclusions
+            "**/data/models/**",
             "**/di/**",
             "**/databinding/**",
             "**/android/databinding/**",
@@ -310,18 +267,14 @@ tasks.register<JacocoReport>("jacocoTestReport") {
             "outputs/code_coverage/debugAndroidTest/connected/coverage.ec",
         ),
     )
-//    finalizedBy("jacocoTestCoverageVerification")
 }
+
 tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
     dependsOn("jacocoTestReport")
-
     violationRules {
         rule {
-            limit {
-                minimum = "0.80".toBigDecimal() // 80% minimum coverage
-            }
+            limit { minimum = "0.80".toBigDecimal() } // 80% coverage
         }
-
         rule {
             element = "CLASS"
             limit {

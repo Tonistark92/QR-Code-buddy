@@ -20,6 +20,13 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.common.util.concurrent.ListenableFuture
 
+/**
+ * A Composable that shows a camera preview and runs a QR code analyzer.
+ *
+ * @param onTapToFocus Callback invoked when the user taps on the preview to focus.
+ * @param analyzer The [ImageAnalysis.Analyzer] that processes camera frames.
+ * @param modifier Optional Compose [Modifier].
+ */
 @Composable
 fun CameraPreviewWithScanner(
     onTapToFocus: (Offset) -> Unit,
@@ -29,10 +36,10 @@ fun CameraPreviewWithScanner(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    val cameraProviderFuture =
-        remember {
-            ProcessCameraProvider.getInstance(context)
-        }
+    // CameraProviderFuture is used to get ProcessCameraProvider asynchronously
+    val cameraProviderFuture = remember {
+        ProcessCameraProvider.getInstance(context)
+    }
 
     AndroidView(
         factory = { context ->
@@ -48,6 +55,9 @@ fun CameraPreviewWithScanner(
     )
 }
 
+/**
+ * Sets up the camera preview, image analysis, and binds them to the lifecycle.
+ */
 private fun createCameraPreview(
     context: Context,
     lifecycleOwner: LifecycleOwner,
@@ -57,22 +67,20 @@ private fun createCameraPreview(
 ): PreviewView {
     val previewView = PreviewView(context)
 
-    // Setup preview
+    // Preview setup
     val preview = Preview.Builder().build()
-    val selector =
-        CameraSelector.Builder()
-            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-            .build()
+    val selector = CameraSelector.Builder()
+        .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+        .build()
     preview.surfaceProvider = previewView.surfaceProvider
 
-    // Setup image analysis
-    val imageAnalysis =
-        ImageAnalysis.Builder()
-            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            .build()
+    // Image analysis setup for QR scanning
+    val imageAnalysis = ImageAnalysis.Builder()
+        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+        .build()
     imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(context), analyzer)
 
-    // Bind camera
+    // Bind camera lifecycle
     try {
         cameraProviderFuture.get().bindToLifecycle(
             lifecycleOwner,
@@ -84,7 +92,7 @@ private fun createCameraPreview(
         Log.e("ISLAM", "Camera binding failed", e)
     }
 
-    // Setup touch to focus
+    // Setup touch-to-focus on the preview
     setupTouchToFocus(
         previewView = previewView,
         cameraProviderFuture = cameraProviderFuture,
@@ -98,6 +106,17 @@ private fun createCameraPreview(
     return previewView
 }
 
+/**
+ * Adds touch-to-focus functionality to the camera preview.
+ *
+ * @param previewView The [PreviewView] showing the camera feed.
+ * @param cameraProviderFuture The [ProcessCameraProvider] future.
+ * @param lifecycleOwner Lifecycle owner for binding camera.
+ * @param selector Camera selector for front/back camera.
+ * @param preview The camera preview instance.
+ * @param imageAnalysis Image analysis for QR code scanning.
+ * @param onTapToFocus Callback with tap position in screen coordinates.
+ */
 private fun setupTouchToFocus(
     previewView: PreviewView,
     cameraProviderFuture: ListenableFuture<ProcessCameraProvider>,
@@ -112,15 +131,15 @@ private fun setupTouchToFocus(
             val x = event.x
             val y = event.y
 
-            // Send tap position to callback
+            // Notify Compose layer
             onTapToFocus(Offset(x, y))
 
+            // Convert touch to metering point
             val factory = previewView.meteringPointFactory
             val meteringPoint = factory.createPoint(x, y)
-            val action =
-                FocusMeteringAction.Builder(meteringPoint)
-                    .addPoint(meteringPoint, FocusMeteringAction.FLAG_AF)
-                    .build()
+            val action = FocusMeteringAction.Builder(meteringPoint)
+                .addPoint(meteringPoint, FocusMeteringAction.FLAG_AF)
+                .build()
 
             try {
                 cameraProviderFuture.get()

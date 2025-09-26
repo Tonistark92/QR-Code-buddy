@@ -185,7 +185,7 @@ fun StorageScanScreen(navController: NavController) {
                 is AllStorageImagesEffect.NavigateToQrDetailsScreen -> {
                     val encodedQrData = URLEncoder.encode(event.qrCodeData, "UTF-8")
                     val encodedImageUri = URLEncoder.encode(event.imageUri, "UTF-8")
-                    navController.navigate("${Screens.ShowQRCodeDataScreen}/$encodedQrData/$encodedImageUri")
+                    navController.navigate("${Screens.SHOW_QR_CODE_DATA_SCREEN}/$encodedQrData/$encodedImageUri")
                 }
             }
         }

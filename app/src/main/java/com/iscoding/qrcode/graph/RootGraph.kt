@@ -24,93 +24,105 @@ import com.iscoding.qrcode.features.scan.camera.ScanCodeScreen
 import com.iscoding.qrcode.features.scan.storage.allimages.StorageScanScreen
 import com.iscoding.qrcode.features.scan.storage.details.QrDetailScreen
 
+/**
+ * Root navigation graph of the application.
+ *
+ * Defines all available destinations (screens) and their navigation routes
+ * using Jetpack Compose Navigation.
+ *
+ * ### Features:
+ * - Handles navigation between **Main**, **Scan**, **Generate**, **Storage** and **Detail** screens.
+ * - Supports deep links for opening QR details directly (`qrcodebuddy://...`).
+ * - Wraps each destination inside [AnimatedScreenTransition] for smooth
+ * fade & slide transitions.
+ *
+ * @param navController The [NavHostController] that manages navigation state.
+ */
 @SuppressLint("NewApi")
 @Composable
 fun RootNavigationGraph(navController: NavHostController) {
     NavHost(
-        navController =
-
-        navController,
-        startDestination = Screens.MainScreen,
+        navController = navController,
+        startDestination = Screens.MAIN_SCREEN,
     ) {
-        composable(
-            route = Screens.MainScreen,
-        ) {
+        // Main screen
+        composable(route = Screens.MAIN_SCREEN) {
             AnimatedScreenTransition {
                 MainScreen(navController = navController)
             }
         }
-        composable(route = Screens.ScanCode) {
+
+        // Camera scan screen
+        composable(route = Screens.SCAN_CODE) {
             AnimatedScreenTransition {
                 ScanCodeScreen()
             }
         }
-        composable(route = Screens.GenerateCode) {
+
+        // QR Code generation screen
+        composable(route = Screens.GENERATE_CODE) {
             AnimatedScreenTransition {
                 GenerateQRCodeScreen()
             }
         }
-        composable(route = Screens.ShowAllImagesScreen) {
+
+        // Show all storage images screen
+        composable(route = Screens.SHOW_ALL_IMAGES_SCREEN) {
             AnimatedScreenTransition {
                 StorageScanScreen(navController = navController)
             }
         }
-        composable(route = Screens.GenerateCode) {
-            AnimatedScreenTransition {
-                GenerateQRCodeScreen()
-            }
-        }
-        composable(route = Screens.AskFromCameraOrStorageScreen) {
+
+        // Ask from Camera or Storage screen
+        composable(route = Screens.ASK_FROM_CAMERA_OR_STORAGE_SCREEN) {
             AnimatedScreenTransition {
                 AskFromCameraOrStorageScreen(navController = navController)
             }
         }
 
+        // QR Code Details screen (with arguments + deep link)
         composable(
-            route = "${Screens.ShowQRCodeDataScreen}/{qrCodeData}/{imageUri}",
-            arguments =
-            listOf(
+            route = "${Screens.SHOW_QR_CODE_DATA_SCREEN}/{qrCodeData}/{imageUri}",
+            arguments = listOf(
                 navArgument("qrCodeData") {
                     type = NavType.StringType
-                    defaultValue = "" // Add default value
+                    defaultValue = ""
                 },
                 navArgument("imageUri") {
                     type = NavType.StringType
-                    defaultValue = "" // Add default value
+                    defaultValue = ""
                 },
             ),
-            deepLinks =
-            listOf(
+            deepLinks = listOf(
                 navDeepLink {
-                    uriPattern = "qrcodebuddy://${Screens.ShowQRCodeDataScreenDeepLink}/{qrCodeData}/{imageUri}"
+                    uriPattern =
+                        "qrcodebuddy://${Screens.SHOW_QR_CODE_DATA_SCREEN_DEEP_LINK}/{qrCodeData}/{imageUri}"
                 },
             ),
         ) { backStackEntry ->
             val encodedQrCodeData = backStackEntry.arguments?.getString("qrCodeData") ?: ""
             val encodedImageUri = backStackEntry.arguments?.getString("imageUri") ?: ""
 
-            // Validate arguments before decoding
+            // Validate arguments
             if (encodedQrCodeData.isBlank() || encodedImageUri.isBlank()) {
-                // Handle invalid arguments - maybe show error screen or go back
                 Text("Invalid QR code data")
                 return@composable
             }
 
-            val qrCodeData =
-                try {
-                    Uri.decode(encodedQrCodeData)
-                } catch (e: Exception) {
-                    Log.e("Navigation", "Failed to decode QR data: $encodedQrCodeData")
-                    encodedQrCodeData
-                }
+            // Decode args safely
+            val qrCodeData = try {
+                Uri.decode(encodedQrCodeData)
+            } catch (e: Exception) {
+                Log.e("Navigation", "Failed to decode QR data: $encodedQrCodeData")
+                encodedQrCodeData
+            }
 
-            val imageUri =
-                try {
-                    Uri.decode(encodedImageUri)
-                } catch (e: Exception) {
-                    Log.e("Navigation", "Failed to decode image URI: $encodedImageUri")
-                    encodedImageUri
-                }
+            val imageUri = try {
+                Uri.decode(encodedImageUri)
+            } catch (e: Exception) {
+                Log.e("Navigation", "Failed to decode image URI: $encodedImageUri")
+                encodedImageUri
+            }
 
             AnimatedScreenTransition {
                 QrDetailScreen(qrCodeData = qrCodeData, imageUri = imageUri)
@@ -119,15 +131,21 @@ fun RootNavigationGraph(navController: NavHostController) {
     }
 }
 
+/**
+ * Wraps screen content with a fade & slide transition.
+ *
+ * Used in [RootNavigationGraph] to animate screen entry/exit.
+ *
+ * @param content The composable screen content.
+ */
 @Composable
-fun AnimatedScreenTransition(
-//    isVisible: Boolean,
-    content: @Composable () -> Unit,
-) {
+fun AnimatedScreenTransition(content: @Composable () -> Unit) {
     AnimatedVisibility(
         visible = true,
-        enter = fadeIn(animationSpec = tween(500)) + slideInHorizontally(initialOffsetX = { it }),
-        exit = fadeOut(animationSpec = tween(500)) + slideOutHorizontally(targetOffsetX = { -it }),
+        enter = fadeIn(animationSpec = tween(500)) +
+            slideInHorizontally(initialOffsetX = { it }),
+        exit = fadeOut(animationSpec = tween(500)) +
+            slideOutHorizontally(targetOffsetX = { -it }),
     ) {
         content()
     }

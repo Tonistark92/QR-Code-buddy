@@ -16,23 +16,44 @@ import kotlinx.coroutines.launch
 import logcat.logcat
 import java.io.InputStream
 
+/**
+ * ViewModel for managing the state and events of the "Scan QR from Storage Images" screen.
+ *
+ * Responsibilities:
+ * 1. Handle storage permission checks and requests.
+ * 2. Load images and albums from device storage with pagination.
+ * 3. Analyze images for QR codes.
+ * 4. Emit one-time UI effects such as toasts and navigation events.
+ *
+ * @property imageStorageAnalyzer Handles QR code scanning from images.
+ * @property mediaRepository Provides access to storage images and albums.
+ */
 class AllStorageImagesViewModel(
     val imageStorageAnalyzer: QrCodeStorageAnalyzer,
     val mediaRepository: MediaRepository,
 ) : ViewModel() {
+
+    /** Internal mutable state for the UI */
     private val _uiState = MutableStateFlow(AllStorageImagesUiState())
+
+    /** Immutable UI state exposed to the Composables */
     val uiState get() = _uiState.asStateFlow()
+
+    /** Channel for emitting one-time UI effects (navigation, toasts, etc.) */
     private val _effect = Channel<AllStorageImagesEffect>()
     val effect = _effect.receiveAsFlow()
 
+    /**
+     * Handles all events coming from the UI (Composables).
+     *
+     * @param event [AllStorageImagesEvent] representing a user or system action.
+     */
     fun onEvent(event: AllStorageImagesEvent) {
         when (event) {
             is AllStorageImagesEvent.OnInitialPermissionCheck -> {
                 _uiState.update { it.copy(hasStoragePermission = event.hasPermission) }
                 loadInitialData()
-                if (!event.hasPermission) {
-                    requestPermission()
-                }
+                if (!event.hasPermission) requestPermission()
             }
 
             is AllStorageImagesEvent.OnStoragePermissionResult -> {
@@ -43,33 +64,28 @@ class AllStorageImagesViewModel(
                 val previousPermission = _uiState.value.hasStoragePermission
                 _uiState.update { it.copy(hasStoragePermission = event.hasPermission) }
 
-                // Special handling when permission is newly granted
+                // Handle newly granted permission
                 if (!previousPermission && event.hasPermission) {
                     _uiState.update {
                         it.copy(
-                            shouldPermissionDialog = false, // Dismiss permission dialog
-                            shouldLaunchAppSettings = false, // Reset settings flag
+                            shouldPermissionDialog = false,
+                            shouldLaunchAppSettings = false,
                         )
                     }
                     viewModelScope.launch {
-                        // Show success message
                         _effect.send(AllStorageImagesEffect.ShowToast("Camera permission granted!"))
                     }
                     onEvent(AllStorageImagesEvent.LoadInitialData)
                 }
             }
 
-            AllStorageImagesEvent.OnRequestStoragePermission -> {
-                requestPermission()
-            }
+            AllStorageImagesEvent.OnRequestStoragePermission -> requestPermission()
 
             AllStorageImagesEvent.OnDismissPermissionDialog -> {
                 _uiState.update { it.copy(shouldPermissionDialog = false) }
             }
 
-            AllStorageImagesEvent.OnOpenAppSettings -> {
-                openAppSettings()
-            }
+            AllStorageImagesEvent.OnOpenAppSettings -> openAppSettings()
 
             is AllStorageImagesEvent.OnStorageImageClicked -> {
                 logcat("ISLAMMM") { "image clicked !$event.uri" }
@@ -78,21 +94,9 @@ class AllStorageImagesViewModel(
             }
 
             is AllStorageImagesEvent.LoadInitialData -> loadInitialData()
-//
-//            is AllStorageImagesEvent.SelectAlbum -> {
-//                _uiState.update {
-//                    it.copy(
-//                        selectedAlbum = event.albumName,
-//                        storageImagesList = emptyList(), // Clear existing images
-//                        currentPage = 0,
-//                        hasMoreImages = true
-//                    )
-//                }
-//                refreshImages()
-//            }
 
             is AllStorageImagesEvent.RefreshImages -> refreshImages()
-//            is AllStorageImagesEvent.LoadImagesForAlbum -> filterByAlbum(event.albumName)
+
             is AllStorageImagesEvent.OnAnalyzeImage -> {
                 analyzeImage(event.uri, event.inputStream)
             }
@@ -103,7 +107,7 @@ class AllStorageImagesViewModel(
                 _uiState.update {
                     it.copy(
                         selectedAlbum = event.albumName,
-                        storageImagesList = emptyList(), // Clear existing images
+                        storageImagesList = emptyList(),
                         currentPage = 0,
                         hasMoreImages = true,
                     )
@@ -117,15 +121,12 @@ class AllStorageImagesViewModel(
         }
     }
 
+    /** Loads the first page of all images and albums. */
     private fun loadInitialData() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, currentPage = 0, hasMoreImages = true) }
             try {
-                val photos =
-                    mediaRepository.loadPhotos(
-                        limit = _uiState.value.pageSize,
-                        offset = 0,
-                    )
+                val photos = mediaRepository.loadPhotos(limit = _uiState.value.pageSize, offset = 0)
                 val albums = mediaRepository.loadAlbums()
 
                 _uiState.update {
@@ -140,14 +141,13 @@ class AllStorageImagesViewModel(
                     )
                 }
             } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "Unknown error")
-                }
+                _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "Unknown error") }
                 _effect.send(AllStorageImagesEffect.ShowToast("Failed to load images: ${e.message}"))
             }
         }
     }
 
+    /** Loads more images for pagination based on current state. */
     private fun loadMoreImages() {
         val currentState = _uiState.value
         if (currentState.isLoadingMore || !currentState.hasMoreImages) return
@@ -158,16 +158,9 @@ class AllStorageImagesViewModel(
                 val offset = currentState.currentPage * currentState.pageSize
                 val newPhotos =
                     if (currentState.selectedAlbum != null) {
-                        mediaRepository.loadPhotosForAlbum(
-                            album = currentState.selectedAlbum,
-                            limit = currentState.pageSize,
-                            offset = offset,
-                        )
+                        mediaRepository.loadPhotosForAlbum(currentState.selectedAlbum, currentState.pageSize, offset)
                     } else {
-                        mediaRepository.loadPhotos(
-                            limit = currentState.pageSize,
-                            offset = offset,
-                        )
+                        mediaRepository.loadPhotos(limit = currentState.pageSize, offset = offset)
                     }
 
                 _uiState.update {
@@ -179,22 +172,15 @@ class AllStorageImagesViewModel(
                     )
                 }
             } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(isLoadingMore = false)
-                }
+                _uiState.update { it.copy(isLoadingMore = false) }
                 _effect.send(AllStorageImagesEffect.ShowToast("Failed to load more images: ${e.message}"))
             }
         }
     }
 
+    /** Refreshes images based on current selected album or all images. */
     private fun refreshImages() {
-        _uiState.update {
-            it.copy(
-                storageImagesList = emptyList(),
-                currentPage = 0,
-                hasMoreImages = true,
-            )
-        }
+        _uiState.update { it.copy(storageImagesList = emptyList(), currentPage = 0, hasMoreImages = true) }
         if (_uiState.value.selectedAlbum != null) {
             loadImagesForAlbum(_uiState.value.selectedAlbum!!, 0)
         } else {
@@ -202,25 +188,19 @@ class AllStorageImagesViewModel(
         }
     }
 
-    private fun loadImagesForAlbum(
-        albumName: String,
-        page: Int,
-    ) {
+    /**
+     * Loads images for a specific album with pagination support.
+     *
+     * @param albumName The name of the album.
+     * @param page The page number to load (0-based).
+     */
+    private fun loadImagesForAlbum(albumName: String, page: Int) {
         viewModelScope.launch {
-            if (page == 0) {
-                _uiState.update { it.copy(isLoading = true) }
-            } else {
-                _uiState.update { it.copy(isLoadingMore = true) }
-            }
+            if (page == 0) _uiState.update { it.copy(isLoading = true) } else _uiState.update { it.copy(isLoadingMore = true) }
 
             try {
                 val offset = page * _uiState.value.pageSize
-                val photos =
-                    mediaRepository.loadPhotosForAlbum(
-                        album = albumName,
-                        limit = _uiState.value.pageSize,
-                        offset = offset,
-                    )
+                val photos = mediaRepository.loadPhotosForAlbum(albumName, _uiState.value.pageSize, offset)
 
                 _uiState.update {
                     it.copy(
@@ -233,125 +213,62 @@ class AllStorageImagesViewModel(
                     )
                 }
             } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        isLoadingMore = false,
-                        errorMessage = e.message ?: "Unknown error",
-                    )
-                }
+                _uiState.update { it.copy(isLoading = false, isLoadingMore = false, errorMessage = e.message ?: "Unknown error") }
                 _effect.send(AllStorageImagesEffect.ShowToast("Failed to load album images: ${e.message}"))
             }
         }
     }
 
-//    private fun loadInitialData() {
-//        viewModelScope.launch {
-//            _uiState.update { it.copy(isLoading = true) }
-//            try {
-//                val photos = mediaRepository.loadPhotos()
-//                val albums = mediaRepository.loadAlbums()
-//
-//                _uiState.update {
-//                    it.copy(
-//                        isLoading = false,
-//                        storageImagesList = photos,
-//                        albums = albums,
-//                        selectedAlbum = null, // Reset to show all
-//                        errorMessage = "",
-//                    )
-//                }
-//            } catch (e: Exception) {
-//                _uiState.update {
-//                    it.copy(isLoading = false, errorMessage = e.message ?: "Unknown error")
-//                }
-//                _effect.send(AllStorageImagesEffect.ShowToast("Failed to load images: ${e.message}"))
-//            }
-//        }
-//    }
-//
-//    private fun refreshImages() {
-//        if (_uiState.value.selectedAlbum != null) {
-//            filterByAlbum(_uiState.value.selectedAlbum!!)
-//        } else {
-//            loadInitialData()
-//        }
-//    }
-
-    private fun filterByAlbum(albumName: String) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            try {
-                val photos =
-                    mediaRepository.loadForSelectedAlbum(albumName, _uiState.value.pageSize, 0)
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        storageImagesList = photos,
-                        errorMessage = "",
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "Unknown error")
-                }
-                _effect.send(AllStorageImagesEffect.ShowToast("Failed to load album images: ${e.message}"))
-            }
-        }
-    }
-
+    /** Opens the app settings for manually granting storage permission. */
     private fun openAppSettings() {
         viewModelScope.launch {
             _effect.send(AllStorageImagesEffect.OpenAppSettings)
         }
     }
 
-    private fun handlePermissionResult(
-        granted: Boolean,
-        shouldShowRationale: Boolean,
-    ) {
+    /**
+     * Handles storage permission results.
+     *
+     * @param granted True if permission granted.
+     * @param shouldShowRationale True if system suggests showing rationale.
+     */
+    private fun handlePermissionResult(granted: Boolean, shouldShowRationale: Boolean) {
         if (granted) {
-            _uiState.update {
-                it.copy(
-                    hasStoragePermission = true,
-                    shouldPermissionDialog = false,
-                    shouldLaunchAppSettings = false,
-                )
-            }
+            _uiState.update { it.copy(hasStoragePermission = true, shouldPermissionDialog = false, shouldLaunchAppSettings = false) }
             loadInitialData()
         } else {
-            // Permission denied
             _uiState.update {
-                it.copy(
-                    hasStoragePermission = false,
-                    shouldPermissionDialog = true,
-                    shouldLaunchAppSettings = !shouldShowRationale, // If no rationale, go to settings
-                )
+                it.copy(hasStoragePermission = false, shouldPermissionDialog = true, shouldLaunchAppSettings = !shouldShowRationale)
             }
-
             viewModelScope.launch {
-                if (shouldShowRationale) {
-                    _effect.send(AllStorageImagesEffect.ShowToast("Camera permission is needed to scan QR codes"))
-                } else {
-                    _effect.send(
-                        AllStorageImagesEffect.ShowToast("Permission permanently denied. Please enable in settings."),
-                    )
-                }
+                _effect.send(
+                    AllStorageImagesEffect.ShowToast(
+                        if (shouldShowRationale) {
+                            "Camera permission is needed to scan QR codes"
+                        } else {
+                            "Permission permanently denied. Please enable in settings."
+                        },
+                    ),
+                )
             }
         }
     }
 
+    /** Requests storage permission via effect. */
     private fun requestPermission() {
         viewModelScope.launch {
             _effect.send(AllStorageImagesEffect.RequestStoragePermission)
         }
     }
 
-    private fun analyzeImage(
-        uri: Uri,
-        inputStream: InputStream,
-    ) {
-        logcat("ISLAMMM") { "image clicked and now analyze " }
+    /**
+     * Analyzes the given image for QR codes and updates state accordingly.
+     *
+     * @param uri The URI of the selected image.
+     * @param inputStream InputStream of the selected image.
+     */
+    private fun analyzeImage(uri: Uri, inputStream: InputStream) {
+        logcat("ISLAMMM") { "image clicked and now analyze" }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
@@ -365,21 +282,9 @@ class AllStorageImagesViewModel(
                     }
                 },
                 onQrCodeScanned = { qr ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            scannedData = qr,
-                            clickedImageUri = uri.toString(),
-                        )
-                    }
-
+                    _uiState.update { it.copy(isLoading = false, scannedData = qr, clickedImageUri = uri.toString()) }
                     viewModelScope.launch {
-                        _effect.send(
-                            AllStorageImagesEffect.NavigateToQrDetailsScreen(
-                                _uiState.value.scannedData,
-                                _uiState.value.clickedImageUri!!,
-                            ),
-                        )
+                        _effect.send(AllStorageImagesEffect.NavigateToQrDetailsScreen(_uiState.value.scannedData, _uiState.value.clickedImageUri!!))
                     }
                 },
             )

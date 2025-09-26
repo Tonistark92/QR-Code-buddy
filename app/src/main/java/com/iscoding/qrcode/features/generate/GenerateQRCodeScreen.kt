@@ -41,7 +41,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.iscoding.qrcode.R
 import com.iscoding.qrcode.features.generate.event.GenerateQRCodeUiEvent
@@ -62,33 +61,39 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenerateQRCodeScreen() {
+    // Get ViewModel from Koin
     val viewModel = koinViewModel<GenerateQRCodeViewModel>()
+
+    // Observe state with lifecycle awareness
     val state = viewModel.state.collectAsStateWithLifecycle()
+
+    // Launcher for sharing the QR image
     val shareImageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
+
     val context = LocalContext.current
+    // Available QR data types
     val dataTypesList = QrDataType.entries
 
-    val lifecycleOwner = LocalLifecycleOwner.current
-
+    // Collect one-time UI events (sharing, toast messages, etc.)
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collectLatest { event ->
             when (event) {
                 is GenerateQRCodeUiEvent.RequestShare -> {
+                    // Get content URI for the generated QR bitmap
                     val uri = getImageUri(context, event.bitmap)
                     if (uri != null) {
-                        val shareIntent =
-                            Intent().apply {
-                                action = Intent.ACTION_SEND
-                                putExtra(Intent.EXTRA_STREAM, uri)
-                                type = "image/png"
-                            }
+                        // Build system share intent
+                        val shareIntent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_STREAM, uri)
+                            type = "image/png"
+                        }
                         shareImageLauncher.launch(
                             Intent.createChooser(shareIntent, "Share QR Code"),
                         )
                     } else {
-                        Toast.makeText(context, "Could not get image URI", Toast.LENGTH_SHORT)
-                            .show()
+                        Toast.makeText(context, "Could not get image URI", Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -98,29 +103,30 @@ fun GenerateQRCodeScreen() {
             }
         }
     }
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        // TODO: the shimmer overlay the loading bar fix that later
-//        if (state.value.isLoading) {
-//            CircularProgressIndicator()
-//
-//        }
 
+    // Main screen container
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(
-            modifier =
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(40.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            Box(modifier = Modifier.height(200.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
+            // --- QR Code Preview Section ---
+            Box(
+                modifier = Modifier.height(200.dp).fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
                 if (state.value.qrBitmap != null) {
+                    // Show generated QR bitmap
                     Image(
                         bitmap = state.value.qrBitmap!!.asImageBitmap(),
                         contentDescription = "QR Code",
                     )
                 } else {
+                    // Show shimmer placeholder when no QR is generated
                     ShimmerImage(isLoading = state.value.isLoading) {
                         Image(
                             painter = painterResource(id = R.drawable.no_pictures),
@@ -131,69 +137,60 @@ fun GenerateQRCodeScreen() {
             }
             Spacer(modifier = Modifier.height(25.dp))
 
+            // --- Dropdown Menu for selecting QR data type ---
             val isExpanded = remember { mutableStateOf(false) }
-
             ExposedDropdownMenuBox(
                 expanded = isExpanded.value,
-                onExpandedChange = {
-                    isExpanded.value = !isExpanded.value
-                },
-                modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
+                onExpandedChange = { isExpanded.value = !isExpanded.value },
+                modifier = Modifier.fillMaxWidth().wrapContentHeight(),
             ) {
+                // Display selected QR type
                 TextField(
                     value = context.getString(state.value.pickedType.labelResId),
-                    colors =
-                    TextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.tertiary, // Only customize this
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface, // Optional
-                        focusedIndicatorColor = MaterialTheme.colorScheme.primary, // Optional
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant, // Optional
+                    onValueChange = { },
+                    readOnly = true,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded.value)
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.tertiary,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         cursorColor = MaterialTheme.colorScheme.primary,
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Gray,
                         errorLabelColor = Color.Red,
                     ),
-                    onValueChange = {
-                    },
-                    readOnly = true,
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded.value)
-                    },
-                    modifier =
-                    Modifier
-                        .menuAnchor()
-                        .background(MaterialTheme.colorScheme.primary)
-                        .fillMaxWidth(),
+                    modifier = Modifier.menuAnchor().background(MaterialTheme.colorScheme.primary).fillMaxWidth(),
                 )
 
+                // Dropdown items = all data types
                 ExposedDropdownMenu(
                     expanded = isExpanded.value,
-                    onDismissRequest = {
-                        isExpanded.value = false
-                    },
+                    onDismissRequest = { isExpanded.value = false },
                     modifier = Modifier.background(MaterialTheme.colorScheme.secondary),
                 ) {
                     dataTypesList.forEach { item ->
                         DropdownMenuItem(
                             text = { Text(context.getString(item.labelResId)) },
                             onClick = {
+                                // Update state when new type is picked
                                 state.value.pickedType = item
-                                state.value.qrBitmap = null
+                                state.value.qrBitmap = null // Reset QR preview
                                 isExpanded.value = false
                             },
-                            colors =
-                            MenuDefaults.itemColors(
-                                textColor = Color.White,
-                            ),
+                            colors = MenuDefaults.itemColors(textColor = Color.White),
                             modifier = Modifier.background(MaterialTheme.colorScheme.secondary),
                         )
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(26.dp))
+
+            // --- Dynamic Input Section ---
+            // Show different input form depending on selected type
             when (state.value.pickedType) {
                 QrDataType.TEXT ->
                     TextInput(
@@ -292,46 +289,42 @@ fun GenerateQRCodeScreen() {
                     )
             }
 
-            // for share
+            // --- Action Buttons ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                // Share button (only works if QR exists)
                 Button(
                     onClick = {
                         if (state.value.qrBitmap != null) {
                             viewModel.onEvent(GenerateQrEvent.ShareQRCode)
                         }
-                        state.value.qrBitmap?.let {
-                        }
                     },
                     shape = RectangleShape,
-                    colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary, // Background color
-                        contentColor = Color.White, // Text/Icon color
-                        disabledContainerColor = Color.Gray, // Disabled background
-                        disabledContentColor = Color.Black, // Disabled text color
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.White,
+                        disabledContainerColor = Color.Gray,
+                        disabledContentColor = Color.Black,
                     ),
-//            enabled = state.value.qrBitmap != null
                 ) {
-                    Text("Share ")
+                    Text("Share")
                 }
-                // for generate
+
+                // Generate QR button
                 Button(
                     onClick = {
                         viewModel.onEvent(GenerateQrEvent.GenerateQRCode)
                     },
                     shape = RectangleShape,
-                    colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary, // Background color
-                        contentColor = Color.White, // Text/Icon color
-                        disabledContainerColor = Color.Gray, // Disabled background
-                        disabledContentColor = Color.Black, // Disabled text color
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.White,
+                        disabledContainerColor = Color.Gray,
+                        disabledContentColor = Color.Black,
                     ),
-//            enabled = state.value.qrBitmap != null // Disable the button if qrBitmapState is null
                 ) {
                     Text("Generate")
                 }

@@ -19,16 +19,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
+/**
+ * A composable UI widget that prompts the user to grant camera permission.
+ *
+ * Typically used when the app does not have camera permission and needs it to scan QR codes.
+ *
+ * @param onRequestPermission Callback invoked when the user taps the "Grant Camera Permission" button.
+ */
 @Composable
 fun PermissionRequestWidget(onRequestPermission: () -> Unit) {
     Column(
-        modifier =
-        Modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        // Icon at the top to visually indicate the notification/alert
         Icon(
             imageVector = Icons.Default.Notifications,
             contentDescription = null,
@@ -38,6 +45,7 @@ fun PermissionRequestWidget(onRequestPermission: () -> Unit) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Title text
         Text(
             text = "Camera Permission Required",
             style = MaterialTheme.typography.headlineMedium,
@@ -46,6 +54,7 @@ fun PermissionRequestWidget(onRequestPermission: () -> Unit) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Subtitle or body message
         Text(
             text = "This app needs camera access to scan QR codes",
             style = MaterialTheme.typography.bodyMedium,
@@ -54,6 +63,7 @@ fun PermissionRequestWidget(onRequestPermission: () -> Unit) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Button to request permission
         Button(onClick = onRequestPermission) {
             Text("Grant Camera Permission")
         }

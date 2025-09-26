@@ -34,7 +34,7 @@ fun AskFromCameraOrStorageScreen(navController: NavController) {
             contentDescription = "Placeholder",
         )
         Button(
-            onClick = { navController.navigate(Screens.ShowAllImagesScreen) },
+            onClick = { navController.navigate(Screens.SHOW_ALL_IMAGES_SCREEN) },
             shape = RectangleShape,
             colors =
             ButtonDefaults.buttonColors(
@@ -52,7 +52,7 @@ fun AskFromCameraOrStorageScreen(navController: NavController) {
         )
         Button(
             onClick = {
-                navController.navigate(Screens.ScanCode)
+                navController.navigate(Screens.SCAN_CODE)
             },
             shape = RectangleShape,
             colors =

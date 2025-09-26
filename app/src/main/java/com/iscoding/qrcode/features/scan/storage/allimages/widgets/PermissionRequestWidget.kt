@@ -19,16 +19,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
+/**
+ * A composable that displays a UI requesting the user to grant Storage permission.
+ *
+ * This widget is typically shown when the app does not have permission to access
+ * storage, which is required for scanning QR codes from images stored on the device.
+ *
+ * @param onRequestPermission Lambda to invoke when the user taps the "Grant Storage Permission" button.
+ */
 @Composable
 fun PermissionRequestWidget(onRequestPermission: () -> Unit) {
     Column(
-        modifier =
-        Modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        // Icon indicating a notification or permission request
         Icon(
             imageVector = Icons.Default.Notifications,
             contentDescription = null,
@@ -38,6 +46,7 @@ fun PermissionRequestWidget(onRequestPermission: () -> Unit) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Main title text
         Text(
             text = "Storage Permission Required",
             style = MaterialTheme.typography.headlineMedium,
@@ -46,6 +55,7 @@ fun PermissionRequestWidget(onRequestPermission: () -> Unit) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Description text explaining why the permission is needed
         Text(
             text = "This app needs Storage access to scan QR codes from the Images",
             style = MaterialTheme.typography.bodyMedium,
@@ -54,6 +64,7 @@ fun PermissionRequestWidget(onRequestPermission: () -> Unit) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Button to request permission
         Button(onClick = { onRequestPermission() }) {
             Text("Grant Storage Permission")
         }

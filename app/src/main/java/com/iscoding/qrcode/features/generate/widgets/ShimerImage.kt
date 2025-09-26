@@ -24,6 +24,16 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 
+/**
+ * A composable that shows a shimmer placeholder while content is loading.
+ *
+ * When [isLoading] is true, a shimmer effect box is displayed as a placeholder.
+ * When loading is finished, [contentAfterLoading] is rendered instead.
+ *
+ * @param isLoading Whether to show the shimmer effect (true) or the actual content (false).
+ * @param modifier Modifier to be applied to the shimmer container.
+ * @param contentAfterLoading The composable content to display once loading is finished.
+ */
 @Composable
 fun ShimmerImage(
     isLoading: Boolean,
@@ -45,6 +55,15 @@ fun ShimmerImage(
     }
 }
 
+/**
+ * Adds a shimmering placeholder effect to any [Modifier].
+ *
+ * This uses an infinite linear gradient animation that sweeps horizontally
+ * across the component to simulate a loading shimmer effect.
+ *
+ * @receiver Modifier to which the shimmer effect will be applied.
+ * @return A [Modifier] with shimmer animation applied.
+ */
 fun Modifier.shimmerEffect(): Modifier =
     composed {
         var size by remember {

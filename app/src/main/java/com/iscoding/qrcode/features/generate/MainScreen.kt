@@ -72,7 +72,7 @@ fun MainScreen(navController: NavController) {
         )
 
         Button(
-            onClick = { navController.navigate(Screens.AskFromCameraOrStorageScreen) },
+            onClick = { navController.navigate(Screens.ASK_FROM_CAMERA_OR_STORAGE_SCREEN) },
             shape = RectangleShape,
             colors =
             ButtonDefaults.buttonColors(
@@ -89,7 +89,7 @@ fun MainScreen(navController: NavController) {
             contentDescription = "Placeholder",
         )
         Button(
-            onClick = { navController.navigate(Screens.GenerateCode) },
+            onClick = { navController.navigate(Screens.GENERATE_CODE) },
             shape = RectangleShape,
             colors =
             ButtonDefaults.buttonColors(

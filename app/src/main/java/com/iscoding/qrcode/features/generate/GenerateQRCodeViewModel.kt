@@ -14,15 +14,49 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel for the QR Code Generation feature.
+ *
+ * This ViewModel is responsible for:
+ * - Managing [GenerateQRCodeState] which represents the current input,
+ *   formatted data, and generated QR code bitmap.
+ * - Validating and formatting user input depending on [QrDataType]
+ *   (URL, Mail, Tel, SMS, Geo, Event, Text).
+ * - Handling UI events ([GenerateQrEvent]) such as text changes,
+ *   generating a QR code, or sharing a QR code.
+ * - Emitting one-time events like toasts or share intents
+ *   via [_uiEvent] and [GenerateQRCodeUiEvent].
+ *
+ * ### State Management:
+ * - Uses [MutableStateFlow] to expose screen state as [state].
+ * - Uses [Channel] to emit one-time UI events (e.g., sharing, showing toast).
+ *
+ * @property qrCodeGenerator The domain layer interface to generate QR Code bitmaps.
+ */
+
 class GenerateQRCodeViewModel(
     private val qrCodeGenerator: QrCodeGenerator,
 ) : ViewModel() {
+
+    /** Backing state flow for [GenerateQRCodeState]. */
     private val _state = MutableStateFlow(GenerateQRCodeState())
+
+    /** Public immutable state exposed to UI. */
     val state get() = _state.asStateFlow()
+
+    /** Channel for one-time UI events (share, toast, navigation). */
 
     private val _uiEvent = Channel<GenerateQRCodeUiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
+    /**
+     * Validates user input based on the selected [QrDataType].
+     *
+     * Updates error flags in the state if input is invalid.
+     *
+     * @param chosenData The type of QR data being validated.
+     * @return `true` if the input is valid, `false` otherwise.
+     */
     fun validateInput(chosenData: QrDataType): Boolean {
         return when (chosenData) {
             QrDataType.MAIL -> {
@@ -129,6 +163,13 @@ class GenerateQRCodeViewModel(
         }
     }
 
+    /**
+     * Formats validated user input into the proper string representation
+     * for QR code encoding (e.g., `mailto:`, `geo:`, `tel:`).
+     *
+     * @param type The type of data to format.
+     * @return `true` if formatting was successful and state is updated.
+     */
     fun formatData(type: QrDataType): Boolean {
         var isFormattedAndReady = false
 
@@ -235,6 +276,18 @@ class GenerateQRCodeViewModel(
         return isFormattedAndReady
     }
 
+    /**
+     * Handles UI events from the Composable layer.
+     *
+     * Supported events:
+     * - Text field updates ([GenerateQrEvent.OnTextChanged], etc.)
+     * - Type selection ([GenerateQrEvent.OnTypePicked])
+     * - Generate QR Code ([GenerateQrEvent.GenerateQRCode])
+     * - Share QR Code ([GenerateQrEvent.ShareQRCode])
+     * - Clear state ([GenerateQrEvent.ClearQRCode])
+     *
+     * @param event The user-driven event to handle.
+     */
     fun onEvent(event: GenerateQrEvent) {
         when (event) {
             //  Text Input Fields

@@ -32,24 +32,42 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import logcat.logcat
 import org.koin.androidx.compose.koinViewModel
 
+/**
+ * The main entry point of the QR Code Buddy application.
+ *
+ * This activity sets up the app's navigation, handles deep links and share intents,
+ * and connects the UI layer with the [MainActivityViewModel] using an MVI pattern.
+ */
 class MainActivity : ComponentActivity() {
+
+    /**
+     * Ensures that the app applies the correct locale before attaching the base context.
+     */
     override fun attachBaseContext(newBase: Context?) {
         super.attachBaseContext(newBase?.let { LocaleHelper.updateLocale(it) })
     }
 
+    /**
+     * Called when the activity is created.
+     *
+     * - Installs splash screen
+     * - Sets up Compose UI
+     * - Connects [MainActivityViewModel] state and effects to UI
+     * - Handles image share intents and deep links
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
         setContent {
             val viewModel = koinViewModel<MainActivityViewModel>()
             val state by viewModel.uiState.collectAsStateWithLifecycle()
-
             val navController = rememberNavController()
 
             LaunchedEffect(Unit) {
                 navController.enableOnBackPressed(true)
             }
 
+            // Loading state overlay
             Box(contentAlignment = Alignment.Center) {
                 if (state.isLoading) {
                     CircularProgressIndicator(
@@ -62,23 +80,16 @@ class MainActivity : ComponentActivity() {
                     RootNavigationGraph(navController = navController)
                 }
             }
+
+            // Handle "share image" intents (e.g., from Gallery)
             if (Intent.ACTION_SEND == intent.action && intent.type?.startsWith("image/") == true) {
                 viewModel.onEvent(MainActivityEvent.OnNewIntentReceived)
             }
-//            LaunchedEffect(Unit) {
-//                // Check if we should navigate on app resume
-//                val currentState = viewModel.state.first()
-//                if (currentState.qrCode.isNotEmpty() && currentState.imageUri != null) {
-//                    // Navigate to QR details if we have data
-//                    val encodedQrCode = Uri.encode(currentState.qrCode)
-//                    val encodedImageUri = Uri.encode(currentState.imageUri.toString())
-//                    val deepLinkUri = "qrcodebuddy://${Screens.ShowQRCodeDataScreenDeepLink}/${encodedQrCode}/${encodedImageUri}".toUri()
-//                    navController.navigate(deepLinkUri)
-//                }
-//            }
 
+            // Observe effects (side-effects outside state)
             LaunchedEffect(Unit) {
-                viewModel.effect.distinctUntilChanged()
+                viewModel.effect
+                    .distinctUntilChanged()
                     .collectLatest { effect ->
                         when (effect) {
                             is MainActivityEffect.ShowToast -> {
@@ -90,31 +101,32 @@ class MainActivity : ComponentActivity() {
                             }
 
                             is MainActivityEffect.NavigateToQrDetailsScreen -> {
-                                val encodedQrCode = Uri.encode(effect.qrCode) // Use effect data
+                                val encodedQrCode = Uri.encode(effect.qrCode)
                                 val encodedImageUri = Uri.encode(effect.imageUri.toString())
 
-                                val deepLinkUri = "qrcodebuddy://${Screens.ShowQRCodeDataScreenDeepLink}/$encodedQrCode/$encodedImageUri".toUri()
-                                logcat("ISLAAAAAM") { deepLinkUri.toString() }
+                                val deepLinkUri =
+                                    "qrcodebuddy://${Screens.SHOW_QR_CODE_DATA_SCREEN_DEEP_LINK}/$encodedQrCode/$encodedImageUri"
+                                        .toUri()
+
+                                logcat("MainActivity") { deepLinkUri.toString() }
                                 navController.navigate(deepLinkUri)
                             }
 
                             is MainActivityEffect.AnalyzeImage -> {
                                 handleSharedImageIntent(intent, viewModel)
                             }
-
-//                            is MainActivityUiState.Error -> {
-//                                Toast.makeText(
-//                                    this@MainActivity,
-//                                    (uiState as MainActivityUiState.Error).message,
-//                                    Toast.LENGTH_LONG
-//                                ).show()
-//                            }
                         }
                     }
             }
         }
     }
 
+    /**
+     * Reads the shared image from the intent and triggers QR code analysis.
+     *
+     * @param intent The intent containing the shared image.
+     * @param viewModel The [MainActivityViewModel] to dispatch the event to.
+     */
     private fun handleSharedImageIntent(
         intent: Intent,
         viewModel: MainActivityViewModel,

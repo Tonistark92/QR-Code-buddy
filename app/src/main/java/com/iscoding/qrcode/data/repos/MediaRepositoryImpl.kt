@@ -11,258 +11,145 @@ import com.iscoding.qrcode.domain.repos.MediaRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * Implementation of [MediaRepository] for accessing photos from the device's shared storage.
+ *
+ * Provides paginated photo loading, album listing, and photo counts using Android's MediaStore.
+ * Handles differences in Android versions (pre-Q vs Q+).
+ *
+ * @property context The Android [Context], used to access [ContentResolver].
+ */
 class MediaRepositoryImpl(private val context: Context) : MediaRepository {
-    override suspend fun loadPhotos(
-        limit: Int,
-        offset: Int,
-    ): List<SharedStoragePhoto> =
+
+    // -------------------------------
+    // Load Photos
+    // -------------------------------
+    override suspend fun loadPhotos(limit: Int, offset: Int): List<SharedStoragePhoto> =
         withContext(Dispatchers.IO) {
-            val collection =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-                } else {
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                }
-
-            val projection =
-                arrayOf(
-                    MediaStore.Images.Media._ID,
-                    MediaStore.Images.Media.DISPLAY_NAME,
-                    MediaStore.Images.Media.WIDTH,
-                    MediaStore.Images.Media.HEIGHT,
-                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
-                    MediaStore.Images.Media.DATE_ADDED,
-                )
-
-            queryImages(
-                collection = collection,
-                projection = projection,
-                selection = null,
-                selectionArgs = null,
-                limit = limit,
-                offset = offset,
-            )
+            val collection = getMediaCollection()
+            val projection = photoProjection()
+            queryImages(collection, projection, null, null, limit, offset)
         }
 
-    override suspend fun loadPhotosForAlbum(
-        album: String,
-        limit: Int,
-        offset: Int,
-    ): List<SharedStoragePhoto> =
+    override suspend fun loadPhotosForAlbum(album: String, limit: Int, offset: Int): List<SharedStoragePhoto> =
         withContext(Dispatchers.IO) {
-            val collection =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-                } else {
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                }
-
-            val projection =
-                arrayOf(
-                    MediaStore.Images.Media._ID,
-                    MediaStore.Images.Media.DISPLAY_NAME,
-                    MediaStore.Images.Media.WIDTH,
-                    MediaStore.Images.Media.HEIGHT,
-                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
-                    MediaStore.Images.Media.DATE_ADDED,
-                )
-
+            val collection = getMediaCollection()
+            val projection = photoProjection()
             val selection = "${MediaStore.Images.Media.BUCKET_DISPLAY_NAME} = ?"
             val selectionArgs = arrayOf(album)
-
-            queryImages(
-                collection = collection,
-                projection = projection,
-                selection = selection,
-                selectionArgs = selectionArgs,
-                limit = limit,
-                offset = offset,
-            )
+            queryImages(collection, projection, selection, selectionArgs, limit, offset)
         }
 
-    override suspend fun loadAlbums(): List<String> =
-        withContext(Dispatchers.IO) {
-            val collection =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-                } else {
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+    // -------------------------------
+    // Load Albums
+    // -------------------------------
+    override suspend fun loadAlbums(): List<String> = withContext(Dispatchers.IO) {
+        val collection = getMediaCollection()
+        val projection = arrayOf(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
+        val albums = mutableSetOf<String>()
+
+        try {
+            context.contentResolver.query(collection, projection, null, null, "${MediaStore.Images.Media.BUCKET_DISPLAY_NAME} ASC")?.use { cursor ->
+                val bucketColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
+                while (cursor.moveToNext()) {
+                    val bucketName = cursor.getString(bucketColumn)
+                    if (!bucketName.isNullOrBlank()) albums.add(bucketName)
                 }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
-            val projection =
-                arrayOf(
-                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
-                )
+        albums.sorted()
+    }
 
-            val albums = mutableSetOf<String>()
+    override suspend fun loadAlbumsWithCount(): List<AlbumInfo> = withContext(Dispatchers.IO) {
+        val collection = getMediaCollection()
+        val albumCounts = mutableMapOf<String, Int>()
 
-            try {
-                context.contentResolver.query(
-                    collection,
-                    projection,
-                    null,
-                    null,
-                    "${MediaStore.Images.Media.BUCKET_DISPLAY_NAME} ASC",
-                )?.use { cursor ->
-                    val bucketColumn =
-                        cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
-
-                    while (cursor.moveToNext()) {
-                        val bucketName = cursor.getString(bucketColumn)
-                        if (!bucketName.isNullOrBlank()) {
-                            albums.add(bucketName)
-                        }
+        try {
+            context.contentResolver.query(collection, arrayOf(MediaStore.Images.Media.BUCKET_DISPLAY_NAME), null, null, null)?.use { cursor ->
+                val bucketColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
+                while (cursor.moveToNext()) {
+                    val bucketName = cursor.getString(bucketColumn) ?: "Unknown"
+                    if (bucketName.isNotBlank()) {
+                        albumCounts[bucketName] = albumCounts.getOrDefault(bucketName, 0) + 1
                     }
                 }
-            } catch (e: Exception) {
-                // Handle any security exceptions or other errors
-                e.printStackTrace()
             }
-
-            albums.sorted()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
 
-    override suspend fun loadAlbumsWithCount(): List<AlbumInfo> =
-        withContext(Dispatchers.IO) {
-            val collection =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-                } else {
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                }
+        albumCounts.map { (name, count) -> AlbumInfo(name, count) }.sortedBy { it.name }
+    }
 
-            val projection =
-                arrayOf(
-                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
-                    "COUNT(*) as count",
-                )
-
-            val albumCounts = mutableMapOf<String, Int>()
-
-            try {
-                // Group by bucket name to get counts
-                context.contentResolver.query(
-                    collection,
-                    arrayOf(MediaStore.Images.Media.BUCKET_DISPLAY_NAME),
-                    null,
-                    null,
-                    null,
-                )?.use { cursor ->
-                    val bucketColumn =
-                        cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
-
-                    while (cursor.moveToNext()) {
-                        val bucketName = cursor.getString(bucketColumn) ?: "Unknown"
-                        if (bucketName.isNotBlank()) {
-                            albumCounts[bucketName] = albumCounts.getOrDefault(bucketName, 0) + 1
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-
-            albumCounts.map { (name, count) ->
-                AlbumInfo(name, count)
-            }.sortedBy { it.name }
+    // -------------------------------
+    // Photo Counts
+    // -------------------------------
+    override suspend fun getTotalPhotosCount(): Int = withContext(Dispatchers.IO) {
+        val collection = getMediaCollection()
+        try {
+            context.contentResolver.query(collection, arrayOf("COUNT(*) as count"), null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) cursor.getInt(0) else 0
+            } ?: 0
+        } catch (e: Exception) {
+            0
         }
+    }
 
-    override suspend fun getTotalPhotosCount(): Int =
-        withContext(Dispatchers.IO) {
-            val collection =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-                } else {
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                }
+    override suspend fun getTotalPhotosCountForAlbum(album: String): Int = withContext(Dispatchers.IO) {
+        val collection = getMediaCollection()
+        val selection = "${MediaStore.Images.Media.BUCKET_DISPLAY_NAME} = ?"
+        val selectionArgs = arrayOf(album)
 
-            try {
-                context.contentResolver.query(
-                    collection,
-                    arrayOf("COUNT(*) as count"),
-                    null,
-                    null,
-                    null,
-                )?.use { cursor ->
-                    if (cursor.moveToFirst()) {
-                        cursor.getInt(0)
-                    } else {
-                        0
-                    }
-                } ?: 0
-            } catch (e: Exception) {
-                0
-            }
+        try {
+            context.contentResolver.query(collection, arrayOf("COUNT(*) as count"), selection, selectionArgs, null)?.use { cursor ->
+                if (cursor.moveToFirst()) cursor.getInt(0) else 0
+            } ?: 0
+        } catch (e: Exception) {
+            0
         }
+    }
 
-    override suspend fun getTotalPhotosCountForAlbum(album: String): Int =
+    override suspend fun loadForSelectedAlbum(album: String, limit: Int, offset: Int): List<SharedStoragePhoto> =
         withContext(Dispatchers.IO) {
-            val collection =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-                } else {
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                }
-
+            val collection = getMediaCollection()
+            val projection = photoProjection()
             val selection = "${MediaStore.Images.Media.BUCKET_DISPLAY_NAME} = ?"
             val selectionArgs = arrayOf(album)
-
-            try {
-                context.contentResolver.query(
-                    collection,
-                    arrayOf("COUNT(*) as count"),
-                    selection,
-                    selectionArgs,
-                    null,
-                )?.use { cursor ->
-                    if (cursor.moveToFirst()) {
-                        cursor.getInt(0)
-                    } else {
-                        0
-                    }
-                } ?: 0
-            } catch (e: Exception) {
-                0
-            }
+            queryImages(collection, projection, selection, selectionArgs, limit, offset)
         }
 
-    override suspend fun loadForSelectedAlbum(
-        album: String,
-        limit: Int,
-        offset: Int,
-    ): List<SharedStoragePhoto> =
-        withContext(Dispatchers.IO) {
-            val collection =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-                } else {
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                }
-
-            val projection =
-                arrayOf(
-                    MediaStore.Images.Media._ID,
-                    MediaStore.Images.Media.DISPLAY_NAME,
-                    MediaStore.Images.Media.WIDTH,
-                    MediaStore.Images.Media.HEIGHT,
-                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
-                    MediaStore.Images.Media.DATE_ADDED,
-                )
-
-            // Filter by album name
-            val selection = "${MediaStore.Images.Media.BUCKET_DISPLAY_NAME} = ?"
-            val selectionArgs = arrayOf(album)
-
-            queryImages(
-                collection,
-                projection,
-                selection,
-                selectionArgs,
-                limit = limit,
-                offset = offset,
-            )
+    // -------------------------------
+    // Helper Methods
+    // -------------------------------
+    private fun getMediaCollection(): Uri =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+        } else {
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         }
 
+    private fun photoProjection(): Array<String> = arrayOf(
+        MediaStore.Images.Media._ID,
+        MediaStore.Images.Media.DISPLAY_NAME,
+        MediaStore.Images.Media.WIDTH,
+        MediaStore.Images.Media.HEIGHT,
+        MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
+        MediaStore.Images.Media.DATE_ADDED,
+    )
+
+    /**
+     * Queries the MediaStore for images and maps them to [SharedStoragePhoto].
+     *
+     * @param collection The MediaStore URI.
+     * @param projection Columns to retrieve.
+     * @param selection Optional SQL WHERE clause.
+     * @param selectionArgs Arguments for the WHERE clause.
+     * @param limit Maximum number of results.
+     * @param offset Number of results to skip.
+     */
     private fun queryImages(
         collection: Uri,
         projection: Array<String>,
@@ -272,52 +159,25 @@ class MediaRepositoryImpl(private val context: Context) : MediaRepository {
         offset: Int,
     ): List<SharedStoragePhoto> {
         val photos = mutableListOf<SharedStoragePhoto>()
-
-        // Build the sort order with LIMIT and OFFSET
         val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC LIMIT $limit OFFSET $offset"
 
         try {
-            context.contentResolver.query(
-                collection,
-                projection,
-                selection,
-                selectionArgs,
-                sortOrder,
-            )?.use { cursor ->
+            context.contentResolver.query(collection, projection, selection, selectionArgs, sortOrder)?.use { cursor ->
                 val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
-                val displayNameColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
+                val displayNameColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
                 val widthColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.WIDTH)
                 val heightColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.HEIGHT)
-                val bucketColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
+                val bucketColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
 
                 while (cursor.moveToNext()) {
-                    try {
-                        val id = cursor.getLong(idColumn)
-                        val displayName = cursor.getString(displayNameColumn) ?: "Unknown"
-                        val width = cursor.getInt(widthColumn)
-                        val height = cursor.getInt(heightColumn)
-                        val bucketName = cursor.getString(bucketColumn) ?: "Unknown"
-                        val contentUri =
-                            ContentUris.withAppendedId(
-                                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                                id,
-                            )
+                    val id = cursor.getLong(idColumn)
+                    val displayName = cursor.getString(displayNameColumn) ?: "Unknown"
+                    val width = cursor.getInt(widthColumn)
+                    val height = cursor.getInt(heightColumn)
+                    val bucketName = cursor.getString(bucketColumn) ?: "Unknown"
+                    val contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
 
-                        photos.add(
-                            SharedStoragePhoto(
-                                id = id,
-                                displayName = displayName,
-                                width = width,
-                                height = height,
-                                contentUri = contentUri,
-                                bucketName = bucketName,
-                            ),
-                        )
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+                    photos.add(SharedStoragePhoto(id, displayName, width, height, contentUri, bucketName))
                 }
             }
         } catch (e: SecurityException) {
@@ -329,6 +189,7 @@ class MediaRepositoryImpl(private val context: Context) : MediaRepository {
         return photos
     }
 }
+
 // class MediaRepositoryImpl(
 //    private val context: Context,
 // ) : MediaRepository

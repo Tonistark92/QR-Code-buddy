@@ -17,55 +17,57 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-val appModule =
-    module {
+/**
+ * Koin DI module for the QR Code app.
+ *
+ * Provides ViewModels and Repository singletons.
+ *
+ * Key points:
+ * - ViewModels are declared using `viewModel { ... }` and injected with their dependencies.
+ * - Repositories are declared as singletons (`single { ... }`) to ensure one instance across the app.
+ * - Use cases (commented out) can be added with `factory { ... }` if needed.
+ */
+val appModule = module {
 
-//    single {
-// //        Room.databaseBuilder(
-// //            get(),
-// //            AppDatabase::class.java,
-// //            AppDatabase.DATABASE_NAME
-// //        ).fallbackToDestructiveMigration().build()
-// //    }
-// //
-// //    single { get<AppDatabase>().scannedDao() }
-// //    single { get<AppDatabase>().generatedDao() }
-// //    single { QRCodeRepositoryImp(get(), get()) }
-//
-//
-//    }
-
-        viewModel {
-            GenerateQRCodeViewModel(get<QrCodeGenerator>())
-        }
-        viewModel {
-            CameraScanViewModel(get<QrCodeScanner>())
-        }
-        viewModel {
-            MainActivityViewModel(get<QrCodeStorageAnalyzer>())
-        }
-        viewModel {
-
-            QrDetailsViewModel()
-        }
-
-        viewModel {
-
-            AllStorageImagesViewModel(get<QrCodeStorageAnalyzer>(), get<MediaRepository>())
-        }
-
-        // Repositories
-        single<QrCodeGenerator> { QrCodeGeneratorImp() }
-        single<QrCodeScanner> { QrCodeScannerImp() }
-        single<QrCodeStorageAnalyzer> { QrCodeStorageAnalyzerImp() }
-        single<MediaRepository> { MediaRepositoryImpl(androidContext()) }
-
-        // Use Cases (if you have them)
-//    factory { SaveGeneratedQrUseCase(get()) }
-//    factory { GetGeneratedHistoryUseCase(get()) }
-//    factory { DeleteGeneratedQrUseCase(get()) }
-//
-//    factory { SaveScannedQrUseCase(get()) }
-//    factory { GetScannedHistoryUseCase(get()) }
-//    factory { DeleteScannedQrUseCase(get()) }
+    // -------------------------------
+    // ViewModels
+    // -------------------------------
+    viewModel {
+        GenerateQRCodeViewModel(get<QrCodeGenerator>())
     }
+    viewModel {
+        CameraScanViewModel(get<QrCodeScanner>())
+    }
+    viewModel {
+        MainActivityViewModel(get<QrCodeStorageAnalyzer>())
+    }
+    viewModel {
+        QrDetailsViewModel()
+    }
+    viewModel {
+        AllStorageImagesViewModel(
+            get<QrCodeStorageAnalyzer>(),
+            get<MediaRepository>(),
+        )
+    }
+
+    // -------------------------------
+    // Repositories
+    // -------------------------------
+    single<QrCodeGenerator> { QrCodeGeneratorImp() }
+    single<QrCodeScanner> { QrCodeScannerImp() }
+    single<QrCodeStorageAnalyzer> { QrCodeStorageAnalyzerImp() }
+    single<MediaRepository> { MediaRepositoryImpl(androidContext()) }
+
+    // -------------------------------
+    // Use Cases (optional)
+    // -------------------------------
+    // Example usage of factory for use cases:
+    // factory { SaveGeneratedQrUseCase(get()) }
+    // factory { GetGeneratedHistoryUseCase(get()) }
+    // factory { DeleteGeneratedQrUseCase(get()) }
+    //
+    // factory { SaveScannedQrUseCase(get()) }
+    // factory { GetScannedHistoryUseCase(get()) }
+    // factory { DeleteScannedQrUseCase(get()) }
+}

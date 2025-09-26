@@ -111,11 +111,30 @@ AndroidManifest.xml
 
 ### Clone & Build
 ```bash
-git clone https://github.com/[your-username]/[your-repo].git
-cd [your-repo]
+git clone https://github.com/Tonistark92/QR-Code-buddy.git
+cd QR-Code-buddy
+
+# Assemble the debug APK
 ./gradlew assembleDebug
+
+# Run unit tests
 ./gradlew test
+
+# Run instrumented Android tests
 ./gradlew connectedAndroidTest
+
+# Run all code quality checks (ktlint, detekt, Dokka)
+./gradlew codeQuality
+
+# Format all code (spotless)
+./gradlew codeFormat
+
+# Generate Dokka documentation
+./gradlew dokkaHtml
+
+# The generated Dokka docs will be in:
+# build/dokka/html/index.html
+
 
 ## Screenshots
 ![qr1](https://github.com/user-attachments/assets/5b5c0058-6d5f-4f57-b8b0-7ddcd4707eb2)

@@ -14,6 +14,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 
+/**
+ * A reusable text input field with error handling.
+ *
+ * This composable wraps a [TextField] inside a [Column], displays a label,
+ * and optionally shows an error message below the field.
+ *
+ * It is designed to provide consistent styling and validation feedback
+ * across your app.
+ *
+ * @param label The label text shown inside the text field.
+ * @param value The current value of the text input.
+ * @param errorMessage The error message to display when validation fails.
+ * @param shouldShowError Whether the error message should be visible.
+ * @param onValueChange Callback triggered whenever the user types in the field.
+ */
 @Composable
 fun MainTextField(
     label: String,
@@ -31,10 +46,10 @@ fun MainTextField(
             modifier = Modifier.fillMaxWidth(),
             colors =
             TextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.tertiary, // Only customize this
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface, // Optional
-                focusedIndicatorColor = MaterialTheme.colorScheme.primary, // Optional
-                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant, // Optional
+                focusedContainerColor = MaterialTheme.colorScheme.tertiary,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 cursorColor = MaterialTheme.colorScheme.primary,
                 focusedTextColor = Color.Black,
                 unfocusedTextColor = Color.Gray,
@@ -42,6 +57,7 @@ fun MainTextField(
             ),
         )
         Spacer(modifier = Modifier.height(6.dp))
+
         if (shouldShowError) {
             Text(
                 text = errorMessage,
