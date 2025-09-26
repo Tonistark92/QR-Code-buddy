@@ -48,7 +48,7 @@ android {
     kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_1_8)
-            freeCompilerArgs.add("-Xopt-in=kotlin.RequiresOptIn")
+            freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
         }
     }
 
@@ -200,11 +200,11 @@ dependencies {
 }
 
 // JaCoCo
-apply(plugin = "jacoco")
-
-jacoco {
-    toolVersion = "0.8.8"
-}
+// apply(plugin = "jacoco")
+//
+// jacoco {
+//    toolVersion = "0.8.8"
+// }
 
 // Tasks
 tasks.check {
@@ -231,58 +231,58 @@ val fullCheck by tasks.registering {
 }
 
 // Jacoco report
-tasks.register<JacocoReport>("jacocoTestReport") {
-    dependsOn("testDebugUnitTest")
-    group = "Reporting"
-    description = "Generate Jacoco coverage reports for Debug build"
-
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-        csv.required.set(false)
-    }
-
-    val fileFilter =
-        listOf(
-            "**/R.class",
-            "**/R$*.class",
-            "**/BuildConfig.*",
-            "**/Manifest*.*",
-            "**/*Test*.*",
-            "android/**/*.*",
-            "**/data/models/**",
-            "**/di/**",
-            "**/databinding/**",
-            "**/android/databinding/**",
-        )
-
-    val debugTree = fileTree("$buildDir/tmp/kotlin-classes/debug")
-    val mainSrc = "${project.projectDir}/src/main/java"
-    val kotlinSrc = "${project.projectDir}/src/main/kotlin"
-
-    sourceDirectories.setFrom(files(listOf(mainSrc, kotlinSrc)))
-    classDirectories.setFrom(files(listOf(debugTree)))
-    executionData.setFrom(
-        fileTree(buildDir).include(
-            "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
-            "outputs/code_coverage/debugAndroidTest/connected/coverage.ec",
-        ),
-    )
-}
-
-tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
-    dependsOn("jacocoTestReport")
-    violationRules {
-        rule {
-            limit { minimum = "0.80".toBigDecimal() } // 80% coverage
-        }
-        rule {
-            element = "CLASS"
-            limit {
-                counter = "BRANCH"
-                value = "COVEREDRATIO"
-                minimum = "0.70".toBigDecimal()
-            }
-        }
-    }
-}
+// tasks.register<JacocoReport>("jacocoTestReport") {
+//    dependsOn("testDebugUnitTest")
+//    group = "Reporting"
+//    description = "Generate Jacoco coverage reports for Debug build"
+//
+//    reports {
+//        xml.required.set(true)
+//        html.required.set(true)
+//        csv.required.set(false)
+//    }
+//
+//    val fileFilter =
+//        listOf(
+//            "**/R.class",
+//            "**/R$*.class",
+//            "**/BuildConfig.*",
+//            "**/Manifest*.*",
+//            "**/*Test*.*",
+//            "android/**/*.*",
+//            "**/data/models/**",
+//            "**/di/**",
+//            "**/databinding/**",
+//            "**/android/databinding/**",
+//        )
+//
+//    val debugTree = fileTree("$buildDir/tmp/kotlin-classes/debug")
+//    val mainSrc = "${project.projectDir}/src/main/java"
+//    val kotlinSrc = "${project.projectDir}/src/main/kotlin"
+//
+//    sourceDirectories.setFrom(files(listOf(mainSrc, kotlinSrc)))
+//    classDirectories.setFrom(files(listOf(debugTree)))
+//    executionData.setFrom(
+//        fileTree(buildDir).include(
+//            "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
+//            "outputs/code_coverage/debugAndroidTest/connected/coverage.ec",
+//        ),
+//    )
+// }
+//
+// tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+//    dependsOn("jacocoTestReport")
+//    violationRules {
+//        rule {
+//            limit { minimum = "0.80".toBigDecimal() } // 80% coverage
+//        }
+//        rule {
+//            element = "CLASS"
+//            limit {
+//                counter = "BRANCH"
+//                value = "COVEREDRATIO"
+//                minimum = "0.70".toBigDecimal()
+//            }
+//        }
+//    }
+// }

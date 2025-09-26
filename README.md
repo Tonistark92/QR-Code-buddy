@@ -130,7 +130,7 @@ cd QR-Code-buddy
 ./gradlew codeFormat
 
 # Generate Dokka documentation
-./gradlew dokkaHtml
+./gradlew dokkaGenerate
 
 # The generated Dokka docs will be in:
 # build/dokka/html/index.html
@@ -138,6 +138,6 @@ cd QR-Code-buddy
 
 
 ## Screenshots
-![qr1](https://github.com/user-attachments/assets/5b5c0058-6d5f-4f57-b8b0-7ddcd4707eb2)
-![qr2](https://github.com/user-attachments/assets/ddcbf3f9-a117-478e-af83-2b0d4f35f640)
-![qr3](https://github.com/Tonistark92/QR-Code-Generator-Scanner/assets/86676102/832695b5-48dc-46fe-8433-afc480a4f6f5)
+![qr1](docs/screenshots/img1.png)
+![qr2](docs/screenshots/img2.png)
+![qr3](docs/screenshots/img3.png)
