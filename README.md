@@ -136,6 +136,7 @@ cd QR-Code-buddy
 # build/dokka/html/index.html
 
 
+
 ## Screenshots
 ![qr1](https://github.com/user-attachments/assets/5b5c0058-6d5f-4f57-b8b0-7ddcd4707eb2)
 ![qr2](https://github.com/user-attachments/assets/ddcbf3f9-a117-478e-af83-2b0d4f35f640)
