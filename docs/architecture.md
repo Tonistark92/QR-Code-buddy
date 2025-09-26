@@ -1,3 +1,4 @@
+```markdown
 # 🏗️ Architecture Documentation
 
 This project follows **Clean Architecture + MVI** with feature-based packaging.  
@@ -74,8 +75,14 @@ classDiagram
     CameraScanViewModel --> QrCodeScanner
     AllStorageImagesViewModel --> QrCodeStorageAnalyzer
     QrDetailsViewModel --> MediaRepository
-    
-    
+```
+
+---
+
+## 📱 Sequence Diagrams
+
+### QR Code Generation
+```mermaid
 sequenceDiagram
     User->>GenerateQRCodeScreen: Enter text + click Generate
     GenerateQRCodeScreen->>GenerateQRCodeViewModel: onEvent(Generate)
@@ -84,8 +91,10 @@ sequenceDiagram
     QrCodeGeneratorImp-->>GenerateQRCodeViewModel: Return Bitmap
     GenerateQRCodeViewModel-->>GenerateQRCodeScreen: Update state with bitmap
     GenerateQRCodeScreen-->>User: Show QR code
+```
 
-
+### Camera Scan
+```mermaid
 sequenceDiagram
     User->>CameraScanScreen: Open screen
     CameraScanScreen->>CameraScanViewModel: Request scan
@@ -95,8 +104,10 @@ sequenceDiagram
     QrCodeScanner-->>CameraScanViewModel: Result
     CameraScanViewModel-->>CameraScanScreen: Update UI with result
     CameraScanScreen-->>User: Display scanned text
+```
 
-
+### Storage Image Scan
+```mermaid
 sequenceDiagram
     User->>AllStorageImagesScreen: Select image
     AllStorageImagesScreen->>AllStorageImagesViewModel: onEvent(ImageSelected)
@@ -107,3 +118,6 @@ sequenceDiagram
     AllStorageImagesViewModel-->>QrDetailsViewModel: Pass decoded text
     QrDetailsViewModel-->>QrDetailsScreen: Update state
     QrDetailsScreen-->>User: Show QR details
+```
+
+---
