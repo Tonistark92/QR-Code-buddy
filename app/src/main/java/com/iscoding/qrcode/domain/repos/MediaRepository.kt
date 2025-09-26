@@ -12,7 +12,11 @@ import com.iscoding.qrcode.domain.model.SharedStoragePhoto
 // }
 // for pagination
 interface MediaRepository {
-    suspend fun loadPhotos(limit: Int = 50, offset: Int = 0): List<SharedStoragePhoto>
+    suspend fun loadPhotos(
+        limit: Int = 50,
+        offset: Int = 0,
+    ): List<SharedStoragePhoto>
+
     suspend fun loadPhotosForAlbum(
         album: String,
         limit: Int = 50,
@@ -20,8 +24,11 @@ interface MediaRepository {
     ): List<SharedStoragePhoto>
 
     suspend fun loadAlbums(): List<String>
+
     suspend fun loadAlbumsWithCount(): List<AlbumInfo>
+
     suspend fun getTotalPhotosCount(): Int
+
     suspend fun getTotalPhotosCountForAlbum(album: String): Int
 
     suspend fun loadForSelectedAlbum(

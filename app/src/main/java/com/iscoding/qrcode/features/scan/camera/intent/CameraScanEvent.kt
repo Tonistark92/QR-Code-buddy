@@ -23,6 +23,7 @@ sealed class CameraScanEvent {
     data class OnScannedQrCode(val data: String) : CameraScanEvent()
 
     object OnRequestCameraPermission : CameraScanEvent()
+
     object OnTextLongPressed : CameraScanEvent()
 
     object OnOpenAppSettings : CameraScanEvent()

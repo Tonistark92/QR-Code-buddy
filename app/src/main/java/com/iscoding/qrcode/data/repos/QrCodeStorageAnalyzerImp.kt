@@ -14,7 +14,6 @@ import logcat.logcat
 import java.io.InputStream
 
 class QrCodeStorageAnalyzerImp : QrCodeStorageAnalyzer {
-
     override fun analyze(
         uri: Uri,
         inputStream: InputStream,

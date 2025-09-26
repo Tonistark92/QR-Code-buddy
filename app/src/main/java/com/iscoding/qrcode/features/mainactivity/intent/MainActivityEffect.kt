@@ -9,5 +9,6 @@ sealed class MainActivityEffect {
         val qrCode: String,
         val imageUri: Uri,
     ) : MainActivityEffect()
+
     object AnalyzeImage : MainActivityEffect()
 }

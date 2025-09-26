@@ -83,29 +83,32 @@ fun StorageScanScreen(navController: NavController) {
     val viewModel = koinViewModel<AllStorageImagesViewModel>()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
-    val permission = sdk33AndUp {
-        Manifest.permission.READ_MEDIA_IMAGES
-    } ?: Manifest.permission.READ_EXTERNAL_STORAGE
+    val permission =
+        sdk33AndUp {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } ?: Manifest.permission.READ_EXTERNAL_STORAGE
 
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-    ) { granted ->
-        val shouldShowRationale = if (!granted) {
-            ActivityCompat.shouldShowRequestPermissionRationale(
-                context as Activity,
-                permission,
+    val permissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+        ) { granted ->
+            val shouldShowRationale =
+                if (!granted) {
+                    ActivityCompat.shouldShowRequestPermissionRationale(
+                        context as Activity,
+                        permission,
+                    )
+                } else {
+                    false
+                }
+
+            viewModel.onEvent(
+                AllStorageImagesEvent.OnStoragePermissionResult(
+                    granted = granted,
+                    shouldShowRationale = shouldShowRationale,
+                ),
             )
-        } else {
-            false
         }
-
-        viewModel.onEvent(
-            AllStorageImagesEvent.OnStoragePermissionResult(
-                granted = granted,
-                shouldShowRationale = shouldShowRationale,
-            ),
-        )
-    }
     val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
     LaunchedEffect(lifecycleState) {
         if (lifecycleState == Lifecycle.State.RESUMED) {
@@ -190,7 +193,8 @@ fun StorageScanScreen(navController: NavController) {
 
     // UI Content
     Box(
-        modifier = Modifier
+        modifier =
+        Modifier
             .padding(16.dp)
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
@@ -370,7 +374,8 @@ private fun PaginatedImagesList(
 
     LazyColumn(
         state = listState,
-        modifier = Modifier
+        modifier =
+        Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -390,7 +395,8 @@ private fun PaginatedImagesList(
         if (isLoadingMore) {
             item {
                 Box(
-                    modifier = Modifier
+                    modifier =
+                    Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
                     contentAlignment = Alignment.Center,
@@ -474,7 +480,8 @@ private fun PhotoItem(
     onItemClick: (Uri) -> Unit,
 ) {
     Card(
-        modifier = Modifier
+        modifier =
+        Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
             .clickable { onItemClick(photo.contentUri) },
@@ -487,7 +494,8 @@ private fun PhotoItem(
             AsyncImage(
                 model = photo.contentUri,
                 contentDescription = photo.displayName,
-                modifier = Modifier
+                modifier =
+                Modifier
                     .size(80.dp)
                     .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop,
@@ -550,7 +558,8 @@ private fun AlbumDropdown(
             readOnly = true,
             label = { Text("Select Album") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier
+            modifier =
+            Modifier
                 .menuAnchor()
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp),

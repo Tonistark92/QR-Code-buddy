@@ -4,7 +4,6 @@ import android.net.Uri
 import java.io.InputStream
 
 interface QrCodeStorageAnalyzer {
-
     fun analyze(
         uri: Uri,
         inputStream: InputStream,

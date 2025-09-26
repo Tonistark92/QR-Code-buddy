@@ -1,9 +1,31 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    id("org.jetbrains.dokka")
     id("com.diffplug.spotless")
+    id("org.jlleitschuh.gradle.ktlint")
+    id("io.gitlab.arturbosch.detekt")
     kotlin("kapt")
+    id("jacoco")
+}
+
+detekt {
+    toolVersion = "1.23.4"
+    config.setFrom(file("$rootDir/config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+    autoCorrect = true
+}
+ktlint {
+    version.set("1.0.1")
+    debug.set(true)
+    verbose.set(true)
+    android.set(true)
+    outputToConsole.set(true)
+    ignoreFailures.set(false)
+    enableExperimentalRules.set(true)
 }
 android {
     namespace = "com.iscoding.qrcode"
@@ -35,9 +57,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_1_8)
+            freeCompilerArgs.add("-Xopt-in=kotlin.RequiresOptIn")
+        }
     }
     buildFeatures {
         compose = true
@@ -67,9 +91,9 @@ android {
         textReport = true
 
         // Report file locations
-        htmlOutput = file("$buildDir/reports/lint/lint-results.html")
-        xmlOutput = file("$buildDir/reports/lint/lint-results.xml")
-        textOutput = file("$buildDir/reports/lint/lint-results.txt")
+        htmlOutput = layout.buildDirectory.file("reports/lint/lint-results.html").get().asFile
+        xmlOutput = layout.buildDirectory.file("reports/lint/lint-results.xml").get().asFile
+        textOutput = layout.buildDirectory.file("reports/lint/lint-results.txt").get().asFile
 
         // Custom lint rules file (optional)
         lintConfig = file("../lint.xml")
@@ -88,16 +112,15 @@ android {
         error += "StopShip"
     }
 }
+
 spotless {
     kotlin {
         target("**/*.kt")
         targetExclude(
             "**/build/**",
-            "**/Daos.kt", // Exclude specific empty file
-            "**/Entities.kt", // Exclude specific empty file
-            "**/QRDataBase.kt", // Exclude specific empty file
-            // Add more files as needed:
-            // "**/AnotherEmptyFile.kt"
+            "**/Daos.kt",
+            "**/Entities.kt",
+            "**/QRDataBase.kt",
         )
 
         ktlint("1.2.1")
@@ -105,6 +128,7 @@ spotless {
                 mapOf(
                     "ktlint_disabled_rules" to "function-naming",
                     "ktlint_function_naming_ignore_when_annotated_with" to "Composable",
+                    "indent_size" to "4",
                 ),
             )
             .setEditorConfigPath("$rootDir/.editorconfig")
@@ -119,7 +143,6 @@ spotless {
     format("xml") {
         target("**/*.xml")
         trimTrailingWhitespace()
-        indentWithSpaces()
     }
     kotlinGradle {
         target("*.kts")
@@ -128,7 +151,7 @@ spotless {
 }
 
 // Ktlint Configuration
-val ktlint by configurations.creating
+// val ktlint by configurations.creating
 
 dependencies {
 
@@ -193,6 +216,8 @@ dependencies {
     implementation(libs.logcat)
     implementation(project(":designsystem"))
 
+    detektPlugins(libs.detekt.formatting)
+
 //    ktlint("com.pinterest:ktlint:0.50.0") {
 //        attributes {
 //            attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
@@ -209,6 +234,13 @@ dependencies {
 //    ktlint(libs.ktlint.cli.v121)
 //    implementation(libs.jetbrains.kotlin.stdlib)
 }
+// Apply JaCoCo plugin
+apply(plugin = "jacoco")
+
+// JaCoCo configuration
+jacoco {
+    toolVersion = "0.8.8"
+}
 kapt {
     correctErrorTypes = true
 }
@@ -216,11 +248,16 @@ tasks.check {
     dependsOn("spotlessCheck")
 }
 
-val codeQuality by tasks.registering {
-    group = "verification"
-    description = "Run all code quality checks"
-    dependsOn("spotlessCheck", "lintDebug")
-//    dependsOn("spotlessCheck")
+// val codeQuality by tasks.registering {
+//    group = "verification"
+//    description = "Run all code quality checks"
+//    dependsOn("spotlessCheck", "lintDebug")
+// //    dependsOn("spotlessCheck")
+// }
+
+tasks.register("codeQuality") {
+    dependsOn("ktlintCheck", "detekt", "dokkaGenerate")
+    description = "Runs all code quality checks and generates documentation"
 }
 
 val codeFormat by tasks.registering {
@@ -234,44 +271,64 @@ val fullCheck by tasks.registering {
     description = "Run all checks including tests"
     dependsOn("clean", "codeQuality", "test")
 }
+// Custom JaCoCo task for combined coverage
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest")
 
-// val ktlintCheck by tasks.registering(JavaExec::class) {
-//    group = "verification"
-//    description = "Check Kotlin code style."
-//    classpath = ktlint
-//    mainClass.set("com.pinterest.ktlint.Main")
-//    args("src/**/*.kt", "**.kts", "!**/build/**")
-// }
-//
-// val ktlintFormat by tasks.registering(JavaExec::class) {
-//    group = "formatting"
-//    description = "Fix Kotlin code style deviations."
-//    classpath = ktlint
-//    mainClass.set("com.pinterest.ktlint.Main")
-//    jvmArgs = listOf("--add-opens=java.base/java.lang=ALL-UNNAMED") // Might be needed for newer Java versions
-//    args("-F", "src/**/*.kt", "**.kts", "!**/build/**")
-// }
-//
-// // Make ktlintCheck run with check task
-// tasks.check {
-//    dependsOn(ktlintCheck)
-// }
-//
-// // Convenience tasks
-// val codeQuality by tasks.registering {
-//    group = "verification"
-//    description = "Run all code quality checks"
-//    dependsOn("spotlessCheck", "ktlintCheck", "lintDebug")
-// }
-//
-// val codeFormat by tasks.registering {
-//    group = "formatting"
-//    description = "Format all code"
-//    dependsOn("spotlessApply", "ktlintFormat")
-// }
-//
-// val fullCheck by tasks.registering {
-//    group = "verification"
-//    description = "Run all checks including tests"
-//    dependsOn("clean", "codeQuality", "test")
-// }
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports for Debug build"
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+
+    val fileFilter =
+        listOf(
+            "**/R.class",
+            "**/R$*.class",
+            "**/BuildConfig.*",
+            "**/Manifest*.*",
+            "**/*Test*.*",
+            "android/**/*.*",
+            "**/data/models/**", // Add your exclusions
+            "**/di/**",
+            "**/databinding/**",
+            "**/android/databinding/**",
+        )
+
+    val debugTree = fileTree("$buildDir/tmp/kotlin-classes/debug")
+    val mainSrc = "${project.projectDir}/src/main/java"
+    val kotlinSrc = "${project.projectDir}/src/main/kotlin"
+
+    sourceDirectories.setFrom(files(listOf(mainSrc, kotlinSrc)))
+    classDirectories.setFrom(files(listOf(debugTree)))
+    executionData.setFrom(
+        fileTree(buildDir).include(
+            "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
+            "outputs/code_coverage/debugAndroidTest/connected/coverage.ec",
+        ),
+    )
+//    finalizedBy("jacocoTestCoverageVerification")
+}
+tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    dependsOn("jacocoTestReport")
+
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.80".toBigDecimal() // 80% minimum coverage
+            }
+        }
+
+        rule {
+            element = "CLASS"
+            limit {
+                counter = "BRANCH"
+                value = "COVEREDRATIO"
+                minimum = "0.70".toBigDecimal()
+            }
+        }
+    }
+}

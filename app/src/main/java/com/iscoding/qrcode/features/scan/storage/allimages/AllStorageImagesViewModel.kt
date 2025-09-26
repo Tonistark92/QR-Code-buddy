@@ -121,10 +121,11 @@ class AllStorageImagesViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, currentPage = 0, hasMoreImages = true) }
             try {
-                val photos = mediaRepository.loadPhotos(
-                    limit = _uiState.value.pageSize,
-                    offset = 0,
-                )
+                val photos =
+                    mediaRepository.loadPhotos(
+                        limit = _uiState.value.pageSize,
+                        offset = 0,
+                    )
                 val albums = mediaRepository.loadAlbums()
 
                 _uiState.update {
@@ -155,18 +156,19 @@ class AllStorageImagesViewModel(
             _uiState.update { it.copy(isLoadingMore = true) }
             try {
                 val offset = currentState.currentPage * currentState.pageSize
-                val newPhotos = if (currentState.selectedAlbum != null) {
-                    mediaRepository.loadPhotosForAlbum(
-                        album = currentState.selectedAlbum,
-                        limit = currentState.pageSize,
-                        offset = offset,
-                    )
-                } else {
-                    mediaRepository.loadPhotos(
-                        limit = currentState.pageSize,
-                        offset = offset,
-                    )
-                }
+                val newPhotos =
+                    if (currentState.selectedAlbum != null) {
+                        mediaRepository.loadPhotosForAlbum(
+                            album = currentState.selectedAlbum,
+                            limit = currentState.pageSize,
+                            offset = offset,
+                        )
+                    } else {
+                        mediaRepository.loadPhotos(
+                            limit = currentState.pageSize,
+                            offset = offset,
+                        )
+                    }
 
                 _uiState.update {
                     it.copy(
@@ -200,7 +202,10 @@ class AllStorageImagesViewModel(
         }
     }
 
-    private fun loadImagesForAlbum(albumName: String, page: Int) {
+    private fun loadImagesForAlbum(
+        albumName: String,
+        page: Int,
+    ) {
         viewModelScope.launch {
             if (page == 0) {
                 _uiState.update { it.copy(isLoading = true) }
@@ -210,11 +215,12 @@ class AllStorageImagesViewModel(
 
             try {
                 val offset = page * _uiState.value.pageSize
-                val photos = mediaRepository.loadPhotosForAlbum(
-                    album = albumName,
-                    limit = _uiState.value.pageSize,
-                    offset = offset,
-                )
+                val photos =
+                    mediaRepository.loadPhotosForAlbum(
+                        album = albumName,
+                        limit = _uiState.value.pageSize,
+                        offset = offset,
+                    )
 
                 _uiState.update {
                     it.copy(
@@ -341,7 +347,10 @@ class AllStorageImagesViewModel(
         }
     }
 
-    private fun analyzeImage(uri: Uri, inputStream: InputStream) {
+    private fun analyzeImage(
+        uri: Uri,
+        inputStream: InputStream,
+    ) {
         logcat("ISLAMMM") { "image clicked and now analyze " }
 
         viewModelScope.launch {

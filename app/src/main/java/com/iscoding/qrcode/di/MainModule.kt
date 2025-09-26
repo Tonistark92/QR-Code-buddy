@@ -17,7 +17,8 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-val appModule = module {
+val appModule =
+    module {
 
 //    single {
 // //        Room.databaseBuilder(
@@ -34,32 +35,32 @@ val appModule = module {
 //
 //    }
 
-    viewModel {
-        GenerateQRCodeViewModel(get<QrCodeGenerator>())
-    }
-    viewModel {
-        CameraScanViewModel(get<QrCodeScanner>())
-    }
-    viewModel {
-        MainActivityViewModel(get<QrCodeStorageAnalyzer>())
-    }
-    viewModel {
+        viewModel {
+            GenerateQRCodeViewModel(get<QrCodeGenerator>())
+        }
+        viewModel {
+            CameraScanViewModel(get<QrCodeScanner>())
+        }
+        viewModel {
+            MainActivityViewModel(get<QrCodeStorageAnalyzer>())
+        }
+        viewModel {
 
-        QrDetailsViewModel()
-    }
+            QrDetailsViewModel()
+        }
 
-    viewModel {
+        viewModel {
 
-        AllStorageImagesViewModel(get<QrCodeStorageAnalyzer>(), get<MediaRepository>())
-    }
+            AllStorageImagesViewModel(get<QrCodeStorageAnalyzer>(), get<MediaRepository>())
+        }
 
-    // Repositories
-    single<QrCodeGenerator> { QrCodeGeneratorImp() }
-    single<QrCodeScanner> { QrCodeScannerImp() }
-    single<QrCodeStorageAnalyzer> { QrCodeStorageAnalyzerImp() }
-    single<MediaRepository> { MediaRepositoryImpl(androidContext()) }
+        // Repositories
+        single<QrCodeGenerator> { QrCodeGeneratorImp() }
+        single<QrCodeScanner> { QrCodeScannerImp() }
+        single<QrCodeStorageAnalyzer> { QrCodeStorageAnalyzerImp() }
+        single<MediaRepository> { MediaRepositoryImpl(androidContext()) }
 
-    // Use Cases (if you have them)
+        // Use Cases (if you have them)
 //    factory { SaveGeneratedQrUseCase(get()) }
 //    factory { GetGeneratedHistoryUseCase(get()) }
 //    factory { DeleteGeneratedQrUseCase(get()) }
@@ -67,4 +68,4 @@ val appModule = module {
 //    factory { SaveScannedQrUseCase(get()) }
 //    factory { GetScannedHistoryUseCase(get()) }
 //    factory { DeleteScannedQrUseCase(get()) }
-}
+    }

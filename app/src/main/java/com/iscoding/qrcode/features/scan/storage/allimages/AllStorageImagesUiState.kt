@@ -22,5 +22,4 @@ data class AllStorageImagesUiState(
     val errorMessage: String = "",
     val isGoodUrlRegex: Boolean = false,
     var tapPosition: Offset? = null,
-
 )

@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class QrDetailsViewModel : ViewModel() {
-
     private val _uiState = MutableStateFlow(QrDetailsUiState())
     val uiState get() = _uiState.asStateFlow()
     private val _effect = Channel<QrDetailsEffect>(Channel.BUFFERED)

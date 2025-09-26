@@ -43,7 +43,10 @@ class MainActivityViewModel(val imageStorageAnalyzer: QrCodeStorageAnalyzer) : V
         }
     }
 
-    private fun analyzeImage(uri: Uri, inputStream: InputStream) {
+    private fun analyzeImage(
+        uri: Uri,
+        inputStream: InputStream,
+    ) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
@@ -56,7 +59,6 @@ class MainActivityViewModel(val imageStorageAnalyzer: QrCodeStorageAnalyzer) : V
                         _effect.send(MainActivityEffect.ShowToast("No Qr code in that image or Error happened"))
                     }
                 },
-
                 onQrCodeScanned = { qr ->
                     _uiState.update {
                         it.copy(

@@ -68,7 +68,8 @@ fun RootNavigationGraph(navController: NavHostController) {
 
         composable(
             route = "${Screens.ShowQRCodeDataScreen}/{qrCodeData}/{imageUri}",
-            arguments = listOf(
+            arguments =
+            listOf(
                 navArgument("qrCodeData") {
                     type = NavType.StringType
                     defaultValue = "" // Add default value
@@ -78,7 +79,8 @@ fun RootNavigationGraph(navController: NavHostController) {
                     defaultValue = "" // Add default value
                 },
             ),
-            deepLinks = listOf(
+            deepLinks =
+            listOf(
                 navDeepLink {
                     uriPattern = "qrcodebuddy://${Screens.ShowQRCodeDataScreenDeepLink}/{qrCodeData}/{imageUri}"
                 },
@@ -94,19 +96,21 @@ fun RootNavigationGraph(navController: NavHostController) {
                 return@composable
             }
 
-            val qrCodeData = try {
-                Uri.decode(encodedQrCodeData)
-            } catch (e: Exception) {
-                Log.e("Navigation", "Failed to decode QR data: $encodedQrCodeData")
-                encodedQrCodeData
-            }
+            val qrCodeData =
+                try {
+                    Uri.decode(encodedQrCodeData)
+                } catch (e: Exception) {
+                    Log.e("Navigation", "Failed to decode QR data: $encodedQrCodeData")
+                    encodedQrCodeData
+                }
 
-            val imageUri = try {
-                Uri.decode(encodedImageUri)
-            } catch (e: Exception) {
-                Log.e("Navigation", "Failed to decode image URI: $encodedImageUri")
-                encodedImageUri
-            }
+            val imageUri =
+                try {
+                    Uri.decode(encodedImageUri)
+                } catch (e: Exception) {
+                    Log.e("Navigation", "Failed to decode image URI: $encodedImageUri")
+                    encodedImageUri
+                }
 
             AnimatedScreenTransition {
                 QrDetailScreen(qrCodeData = qrCodeData, imageUri = imageUri)

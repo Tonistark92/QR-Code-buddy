@@ -33,7 +33,6 @@ import logcat.logcat
 import org.koin.androidx.compose.koinViewModel
 
 class MainActivity : ComponentActivity() {
-
     override fun attachBaseContext(newBase: Context?) {
         super.attachBaseContext(newBase?.let { LocaleHelper.updateLocale(it) })
     }
@@ -116,7 +115,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun handleSharedImageIntent(intent: Intent, viewModel: MainActivityViewModel) {
+    private fun handleSharedImageIntent(
+        intent: Intent,
+        viewModel: MainActivityViewModel,
+    ) {
         val imageUri =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)

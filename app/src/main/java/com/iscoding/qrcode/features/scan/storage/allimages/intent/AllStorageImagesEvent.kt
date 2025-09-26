@@ -22,8 +22,11 @@ sealed class AllStorageImagesEvent {
     object OnDismissPermissionDialog : AllStorageImagesEvent()
 
     object LoadInitialData : AllStorageImagesEvent()
+
     data class SelectAlbum(val albumName: String?) : AllStorageImagesEvent()
+
     object RefreshImages : AllStorageImagesEvent()
+
     object LoadMoreImages : AllStorageImagesEvent()
 //    data class LoadImagesForAlbum(val context: Context, val albumName: String) : AllStorageImagesEvent()
 
