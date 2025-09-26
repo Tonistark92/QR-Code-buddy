@@ -213,7 +213,7 @@ tasks.check {
 
 tasks.register("codeQuality") {
 //    dependsOn("ktlintCheck", "detekt", "dokkaGenerate")
-    dependsOn("ktlintCheck", "dokkaGenerate")
+    dependsOn("spotlessCheck", "lintDebug")
     description = "Runs all code quality checks and generates documentation"
     group = "verification"
 }
