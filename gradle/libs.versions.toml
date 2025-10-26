@@ -226,6 +226,7 @@ appcompat = "1.7.1"
 material = "1.12.0"
 uiToolingPreviewAndroid = "1.9.3"
 jetbrainsKotlinJvm = "2.2.20"
+uiToolingPreviewAndroidVersion = "1.9.4"
 
 [libraries]
 androidx-compose-bom-v20240900 = { module = "androidx.compose:compose-bom", version.ref = "composeBomVersion" }
@@ -287,5 +288,6 @@ zxing-core = { module = "com.google.zxing:core", version.ref = "coreVersion" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "uiToolingPreviewAndroid" }
+ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "uiToolingPreviewAndroidVersion" }
 
 

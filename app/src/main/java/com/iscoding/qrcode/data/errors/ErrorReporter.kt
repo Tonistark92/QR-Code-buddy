@@ -59,7 +59,7 @@ object ErrorReporter {
 //            }
 //            when (error) {
 //                is Throwable -> Sentry.captureException(error)
-////                else -> Sentry.captureMessage(error.message)
+// //                else -> Sentry.captureMessage(error.message)
 //            }
 //        }
     }
