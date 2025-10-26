@@ -1,0 +1,49 @@
+#!/bin/bash
+
+echo "Running pre-commit checks..."
+
+# Check if this is an initial commit
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+    against=HEAD
+else
+    # Initial commit: diff against an empty tree object
+    against=$(git hash-object -t tree /dev/null)
+fi
+
+# Get list of staged Kotlin files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(kt|kts)$')
+
+if [[ "$STAGED_FILES" = "" ]]; then
+  echo "No Kotlin files staged for commit."
+  exit 0
+fi
+
+echo "Running Spotless check..."
+./gradlew spotlessCheck
+
+if [ $? -ne 0 ]; then
+  echo "❌ Spotless check failed. Run './gradlew spotlessApply' to fix formatting issues."
+  exit 1
+fi
+
+#echo "Running Ktlint check..."
+#./gradlew ktlintCheck
+
+#if [ $? -ne 0 ]; then
+#  echo "❌ Ktlint check failed. Run './gradlew ktlintFormat' to fix style issues."
+#  exit 1
+#fi
+
+echo "Running Android Lint..."
+./gradlew lintDebug
+
+if [ $? -ne 0 ]; then
+  echo "❌ Android Lint found issues. Please fix them before committing."
+  exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"
+exit 0
+
+#!/usr/bin/env bash

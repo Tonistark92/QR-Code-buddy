@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">QRCode Buddy</string>
+
+
+    <string name="qr_type_text">Text</string>
+    <string name="qr_type_url">URL</string>
+    <string name="qr_type_mail">Mail</string>
+    <string name="qr_type_tel">Phone</string>
+    <string name="qr_type_sms">SMS</string>
+    <string name="qr_type_geo">Location</string>
+    <string name="qr_type_event">Event</string>
+
+
+
+    <string name="hello">Hello</string>
+
+</resources>

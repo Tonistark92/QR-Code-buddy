@@ -1,0 +1,28 @@
+#!/bin/bash
+
+echo "Running pre-push checks..."
+
+protected_branch='main'
+current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
+
+# Check if pushing to protected branch
+if [ $protected_branch = $current_branch ]; then
+    echo "Running full test suite before pushing to $protected_branch..."
+
+#    # Run all checks
+#    ./gradlew clean spotlessCheck ktlintCheck lintDebug test
+#
+    # Run all checks
+    ./gradlew clean spotlessCheck  lintDebug test
+
+    if [ $? -ne 0 ]; then
+        echo "❌ Tests failed. Push aborted."
+        exit 1
+    fi
+
+    echo "✅ All tests passed. Proceeding with push to $protected_branch."
+fi
+
+exit 0
+
+#!/usr/bin/env bash
